@@ -51,11 +51,11 @@ contract TicTacToe {
         game.winner = winner;
     }
 
-    function encodeWinner(uint256 gameId, address winner) public pure returns (bytes32) {
-        return keccak256(abi.encode(gameId, winner));
+    function encodeWinner(uint256 gameId, address winner) public view returns (bytes32) {
+        return keccak256(abi.encode(address(this), gameId, winner));
     }
 
-    function _verifyWinner(uint256 gameId, address winner, address signer, bytes calldata signature) private pure {
+    function _verifyWinner(uint256 gameId, address winner, address signer, bytes calldata signature) private view {
         if (_recover(encodeWinner(gameId, winner), signature) != signer) {
             revert BadSignature(signer);
         }
@@ -82,8 +82,8 @@ contract TicTacToe {
         game.winner = me;
     }
 
-    function encodeMoves(uint256 gameId, Move[] calldata moves) public pure returns (bytes32) {
-        return keccak256(abi.encode(gameId, moves));
+    function encodeMoves(uint256 gameId, Move[] calldata moves) public view returns (bytes32) {
+        return keccak256(abi.encode(address(this), gameId, moves));
     }
 
     function _verifyMoves(
@@ -91,7 +91,7 @@ contract TicTacToe {
         Move[] calldata moves,
         address signer,
         bytes calldata signature
-    ) private pure {
+    ) private view {
         if (_recover(encodeMoves(gameId, moves), signature) != signer) {
             revert BadSignature(signer);
         }
