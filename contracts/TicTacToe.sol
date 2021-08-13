@@ -7,9 +7,12 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 struct Game {
     address player0;
     address player1;
-    address lastPlayer;
-    address[][] board;
     address winner;
+}
+
+struct State {
+    address lastPlayer;
+    address[3][3] board;
 }
 
 struct Move {
@@ -31,8 +34,6 @@ contract TicTacToe {
         getGame.push(Game({
             player0: player0,
             player1: player1,
-            lastPlayer: player1,  // player0 should start
-            board: _emptyBoard(),
             winner: address(0)
         }));
     }
@@ -73,8 +74,11 @@ contract TicTacToe {
         _verifyMoves(gameId, moves, me, mySig);
         _verifyMoves(gameId, moves[0:moves.length - 1], opponent, opponentSig);
 
-        // Copy to memory to be able to modify it using pure functions.
-        Game memory state = game;
+        address[3][3] memory board;
+        State memory state = State({
+            lastPlayer: game.player1,  // player0 should start
+            board: board
+        });
         for (uint256 i = 0; i < moves.length; i++) {
             doMove(state, moves[i]);
         }
@@ -111,7 +115,7 @@ contract TicTacToe {
     }
 
     // GAME LOGIC
-    function doMove(Game memory state, Move calldata move) public pure returns (Game memory) {
+    function doMove(State memory state, Move calldata move) public pure returns (State memory) {
         require(state.board[move.i][move.j] == address(0), "!empty");
         require(move.player != state.lastPlayer, "!turn");
         state.board[move.i][move.j] = move.player;
@@ -119,7 +123,7 @@ contract TicTacToe {
         return state;
     }
 
-    function checkWinner(address[][] memory board, address winner) public pure returns (bool) {
+    function checkWinner(address[3][3] memory board, address winner) public pure returns (bool) {
         (uint256 rows, uint256 cols) = (board.length, board[0].length);
         require(rows == cols, "rows != cols");
 
@@ -174,12 +178,5 @@ contract TicTacToe {
         }
 
         return false;
-    }
-
-    function _emptyBoard() private pure returns (address[][] memory board) {
-        board = new address[][](3);
-        board[0] = new address[](3);
-        board[1] = new address[](3);
-        board[2] = new address[](3);
     }
 }
