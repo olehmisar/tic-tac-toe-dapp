@@ -18,11 +18,6 @@ struct Move {
     uint256 j;
 }
 
-struct Proof {
-    uint256 gameId;
-    address winner;
-}
-
 contract TicTacToe {
     error BadSignature(address signer);
 
@@ -40,6 +35,30 @@ contract TicTacToe {
             board: _emptyBoard(),
             winner: address(0)
         }));
+    }
+
+    function endGameWithWinner(
+        uint256 gameId,
+        address winner,
+        bytes calldata mySig,
+        bytes calldata opponentSig
+    ) external {
+        Game storage game = getGame[gameId];
+        require(game.winner == address(0), "game ended");
+        (address me, address opponent) = _validateMsgSender(game.player0, game.player1);
+        _verifyWinner(gameId, winner, me, mySig);
+        _verifyWinner(gameId, winner, opponent, opponentSig);
+        game.winner = winner;
+    }
+
+    function encodeWinner(uint256 gameId, address winner) public pure returns (bytes32) {
+        return keccak256(abi.encode(gameId, winner));
+    }
+
+    function _verifyWinner(uint256 gameId, address winner, address signer, bytes calldata signature) private pure {
+        if (_recover(encodeWinner(gameId, winner), signature) != signer) {
+            revert BadSignature(signer);
+        }
     }
 
     function endGameWithMoves(

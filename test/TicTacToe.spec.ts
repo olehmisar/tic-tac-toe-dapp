@@ -112,4 +112,53 @@ describe('TicTacToe', () => {
       await expect(lobby.endGameWithMoves(gameId, validMoves, sig0, sig1)).to.be.revertedWith('game ended');
     });
   });
+
+  describe('#endGameWithWinner', () => {
+    let gameId: number;
+    beforeEach(async () => {
+      await lobby.startGame(player0, player1);
+      expect(await lobby.gamesLength()).to.eq(1); // sanity check
+      gameId = 0;
+    });
+
+    async function signWinner(signer: SignerWithAddress, winner: string) {
+      return await signer.signMessage(arrayify(await lobby.encodeWinner(gameId, winner)));
+    }
+
+    it('should end the game with valid signatures and the same winner', async () => {
+      const sig0 = await signWinner(player0Account, player0);
+      const sig1 = await signWinner(player1Account, player0);
+      await lobby.endGameWithWinner(gameId, player0, sig0, sig1);
+      expect((await lobby.getGame(gameId)).winner).to.eq(player0);
+    });
+
+    it('should NOT end the game with different winner', async () => {
+      const sig0 = await signWinner(player0Account, player0);
+      const sig1 = await signWinner(player1Account, player1);
+      await expect(lobby.endGameWithWinner(gameId, player0, sig0, sig1)).to.be.revertedWith(
+        `custom error 'BadSignature("${player1}")'`,
+      );
+      await expect(lobby.endGameWithWinner(gameId, player1, sig0, sig1)).to.be.revertedWith(
+        `custom error 'BadSignature("${player0}")'`,
+      );
+    });
+
+    it('should NOT end the game with invalid signatures', async () => {
+      const sig0 = await signWinner(player0Account, player0);
+      const sig1 = await signWinner(player1Account, player0);
+      await expect(lobby.endGameWithWinner(gameId, player0, sig0, sig0)).to.be.revertedWith(
+        `custom error 'BadSignature("${player1}")'`,
+      );
+      await expect(lobby.endGameWithWinner(gameId, player0, sig1, sig1)).to.be.revertedWith(
+        `custom error 'BadSignature("${player0}")'`,
+      );
+    });
+
+    it('should NOT end the game if the game is already ended', async () => {
+      const sig0 = await signWinner(player0Account, player0);
+      const sig1 = await signWinner(player1Account, player0);
+      await lobby.endGameWithWinner(gameId, player0, sig0, sig1);
+      await expect(lobby.endGameWithWinner(gameId, player0, sig0, sig1)).to.be.revertedWith('game ended');
+    });
+  });
 });
