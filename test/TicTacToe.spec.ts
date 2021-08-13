@@ -69,6 +69,10 @@ describe('TicTacToe', () => {
       expect(game.result).to.eq(IN_PROGRESS);
       expect(game.winner).to.eq(AddressZero);
     });
+
+    it('should NOT create a game with themselves', async () => {
+      await expect(lobby.startGame(player0, player0)).to.be.revertedWith('same address');
+    });
   });
 
   describe('#endGameWithMoves', () => {

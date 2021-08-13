@@ -36,6 +36,7 @@ contract TicTacToe {
     }
 
     function startGame(address player0, address player1) external {
+        require(player0 != player1, "same address");
         getGame.push(Game({
             player0: player0,
             player1: player1,

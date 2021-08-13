@@ -1,8 +1,9 @@
-import { Layout, Space, Typography } from 'antd';
+import { Layout, message, Space, Typography } from 'antd';
 import 'antd/dist/antd.css';
 import React, { FC } from 'react';
 import { BrandButton } from './components/BrandButton';
 import { ConnectOr } from './components/ConnectOr';
+import { formatRPCError } from './utils';
 
 export const App: FC = () => {
   return (
@@ -17,7 +18,11 @@ export const App: FC = () => {
                   type="primary"
                   onClick={async () => {
                     const address = await provider.getSigner().getAddress();
-                    await ticTacToe.startGame(address, address);
+                    try {
+                      await ticTacToe.startGame(address, address);
+                    } catch (e) {
+                      await message.error(formatRPCError(e));
+                    }
                   }}
                 >
                   Create game
