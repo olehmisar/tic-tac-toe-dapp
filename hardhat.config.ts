@@ -5,6 +5,7 @@ import 'hardhat-abi-exporter';
 import 'hardhat-deploy';
 import { HardhatUserConfig } from 'hardhat/config';
 import 'solidity-coverage';
+import { TEST_PRIVATE_KEY } from './env';
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -14,6 +15,16 @@ const config: HardhatUserConfig = {
         enabled: true,
         runs: 200,
       },
+    },
+  },
+  networks: {
+    localhost: {
+      accounts: [TEST_PRIVATE_KEY],
+    },
+  },
+  namedAccounts: {
+    deployer: {
+      localhost: 0,
     },
   },
   abiExporter: {

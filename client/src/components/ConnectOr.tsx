@@ -1,19 +1,19 @@
 import { ethers } from 'ethers';
 import React, { FC, ReactNode } from 'react';
-import { useWeb3Provider } from '../hooks/useWeb3Provider';
+import { Contracts, useWeb3Provider } from '../hooks/useWeb3Provider';
 import { BrandButton } from './BrandButton';
 
 type Props = {
-  children: ((provider: ethers.providers.Web3Provider) => ReactNode) | ReactNode;
+  children: ((state: { provider: ethers.providers.Web3Provider; contracts: Contracts }) => ReactNode) | ReactNode;
 };
 
 export const ConnectOr: FC<Props> = ({ children }) => {
-  const { provider, connect } = useWeb3Provider();
-  if (provider) {
+  const { state, connect } = useWeb3Provider();
+  if (state) {
     if (typeof children !== 'function') {
       return children;
     }
-    return children(provider);
+    return children(state);
   }
   return (
     <BrandButton type="primary" onClick={connect}>

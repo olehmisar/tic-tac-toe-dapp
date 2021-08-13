@@ -11,9 +11,17 @@ export const App: FC = () => {
         <div>
           <Typography.Title>Tic Tac Toe. Decentralized</Typography.Title>
           <ConnectOr>
-            {(provider) => (
+            {({ provider, contracts: { ticTacToe } }) => (
               <Space>
-                <BrandButton type="primary">Create game</BrandButton>
+                <BrandButton
+                  type="primary"
+                  onClick={async () => {
+                    const address = await provider.getSigner().getAddress();
+                    await ticTacToe.startGame(address, address);
+                  }}
+                >
+                  Create game
+                </BrandButton>
                 <BrandButton>Join game</BrandButton>
               </Space>
             )}
