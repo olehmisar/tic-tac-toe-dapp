@@ -8,11 +8,7 @@ struct Game {
     address player0;
     address player1;
     address winner;
-}
-
-struct State {
-    address lastPlayer;
-    address[3][3] board;
+    uint8 result;
 }
 
 struct Move {
@@ -25,6 +21,15 @@ contract TicTacToe {
     error BadSignature(address signer);
 
     Game[] public getGame;
+    uint8 public constant IN_PROGRESS = 0;
+    uint8 public constant WON = 1;
+    uint8 public constant DRAW = 2;
+
+    uint8 public constant SIZE = 3;
+    struct State {
+        address lastPlayer;
+        address[SIZE][SIZE] board;
+    }
 
     function gamesLength() external view returns (uint256) {
         return getGame.length;
@@ -34,30 +39,32 @@ contract TicTacToe {
         getGame.push(Game({
             player0: player0,
             player1: player1,
+            result: IN_PROGRESS,
             winner: address(0)
         }));
     }
 
     function endGameWithWinner(
         uint256 gameId,
+        uint8 result,
         address winner,
         bytes calldata mySig,
         bytes calldata opponentSig
     ) external {
         Game storage game = getGame[gameId];
-        require(game.winner == address(0), "game ended");
+        require(game.result == IN_PROGRESS, "game ended");
         (address me, address opponent) = _validateMsgSender(game.player0, game.player1);
-        _verifyWinner(gameId, winner, me, mySig);
-        _verifyWinner(gameId, winner, opponent, opponentSig);
-        game.winner = winner;
+        _verifyWinner(gameId, result, winner, me, mySig);
+        _verifyWinner(gameId, result, winner, opponent, opponentSig);
+        _endGame(game, result, winner);
     }
 
-    function encodeWinner(uint256 gameId, address winner) public view returns (bytes32) {
-        return keccak256(abi.encode(address(this), gameId, winner));
+    function encodeWinner(uint256 gameId, uint8 result, address winner) public view returns (bytes32) {
+        return keccak256(abi.encode(address(this), result, gameId, winner));
     }
 
-    function _verifyWinner(uint256 gameId, address winner, address signer, bytes calldata signature) private view {
-        if (_recover(encodeWinner(gameId, winner), signature) != signer) {
+    function _verifyWinner(uint256 gameId, uint8 result, address winner, address signer, bytes calldata signature) private view {
+        if (_recover(encodeWinner(gameId, result, winner), signature) != signer) {
             revert BadSignature(signer);
         }
     }
@@ -69,12 +76,12 @@ contract TicTacToe {
         bytes calldata opponentSig
     ) external {
         Game storage game = getGame[gameId];
-        require(game.winner == address(0), "game ended");
+        require(game.result == IN_PROGRESS, "game ended");
         (address me, address opponent) = _validateMsgSender(game.player0, game.player1);
         _verifyMoves(gameId, moves, me, mySig);
         _verifyMoves(gameId, moves[0:moves.length - 1], opponent, opponentSig);
 
-        address[3][3] memory board;
+        address[SIZE][SIZE] memory board;
         State memory state = State({
             lastPlayer: game.player1,  // player0 should start
             board: board
@@ -82,8 +89,16 @@ contract TicTacToe {
         for (uint256 i = 0; i < moves.length; i++) {
             doMove(state, moves[i]);
         }
-        require(checkWinner(state.board, me), "!winner");
-        game.winner = me;
+
+        if (checkWinner(state.board, me)) {
+            _endGame(game, WON, me);
+            return;
+        }
+        if (!checkWinner(state.board, opponent) && moves.length == SIZE * SIZE) {
+            _endGame(game, DRAW, address(0));
+            return;
+        }
+        revert("!end");
     }
 
     function encodeMoves(uint256 gameId, Move[] calldata moves) public view returns (bytes32) {
@@ -99,6 +114,15 @@ contract TicTacToe {
         if (_recover(encodeMoves(gameId, moves), signature) != signer) {
             revert BadSignature(signer);
         }
+    }
+
+    function _endGame(Game storage game, uint8 result, address winner) private {
+        require(result == DRAW || result == WON, "bad result");
+        if (result == DRAW) {
+            require(winner == address(0), "!address(0)");
+        }
+        game.result = result;
+        game.winner = winner;
     }
 
     function _validateMsgSender(address player0, address player1) private view returns (address me, address opponent) {
@@ -123,7 +147,7 @@ contract TicTacToe {
         return state;
     }
 
-    function checkWinner(address[3][3] memory board, address winner) public pure returns (bool) {
+    function checkWinner(address[SIZE][SIZE] memory board, address winner) public pure returns (bool) {
         (uint256 rows, uint256 cols) = (board.length, board[0].length);
         require(rows == cols, "rows != cols");
 
@@ -167,8 +191,8 @@ contract TicTacToe {
         }
         {
             uint256 sum = 0;
-            for (uint256 i = rows; i > 0; i--) {
-                if (board[i-1][i-1] == winner) {
+            for (uint256 i = 0; i < rows; i++) {
+                if (board[rows - i - 1][i] == winner) {
                     sum += 1;
                 }
             }
