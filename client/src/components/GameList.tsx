@@ -7,18 +7,18 @@ import { BrandButton } from './BrandButton';
 import { ConnectOr } from './ConnectOr';
 
 export const GameList: FC = () => {
-  const { gamePool, listenToGamePool } = useSocket();
+  const socket = useSocket();
   useEffect(() => {
-    listenToGamePool();
+    socket.listenToGamePool();
   });
   return (
     <List
-      dataSource={Object.entries(gamePool)}
+      dataSource={Object.entries(socket.gamePool)}
       renderItem={([poolId, game]) => (
         <List.Item key={poolId}>
           <Card>{game.creator}</Card>
           <ConnectOr>
-            {({ provider, contracts: { ticTacToe } }) => (
+            {({ provider, ticTacToe }) => (
               <BrandButton
                 onClick={async () => {
                   const signer = provider.getSigner();
@@ -28,8 +28,9 @@ export const GameList: FC = () => {
                       ethers.utils.arrayify(await ticTacToe.encodeGameStart(game.creator, address)),
                     );
                     await ticTacToe.startGame(game.creator, address, game.signature, signature);
+                    socket.joinGame(Number(poolId), address, signature);
                   } catch (e) {
-                    await message.error(formatRPCError(e));
+                    message.error(formatRPCError(e));
                     return;
                   }
                 }}
