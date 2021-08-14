@@ -1,8 +1,9 @@
 import { Layout, Typography } from 'antd';
 import 'antd/dist/antd.css';
 import React, { FC, useEffect } from 'react';
-import { CreateGame } from './components/CreateGame';
-import { GameList } from './components/GameList';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { Game } from './pages/Game';
+import { HomePage } from './pages/HomePage';
 import { useSocket } from './store/socket';
 
 export const App: FC = () => {
@@ -12,12 +13,18 @@ export const App: FC = () => {
   });
   return (
     <Layout style={{ height: '100%' }}>
-      <Layout.Content style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-        <div>
-          <Typography.Title>Tic Tac Toe. Decentralized</Typography.Title>
-          <CreateGame />
-          <GameList />
-        </div>
+      <Layout.Content
+        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}
+      >
+        <Typography.Title>Tic Tac Toe. Decentralized</Typography.Title>
+        <Router>
+          <Switch>
+            <Route exact path="/">
+              <HomePage />
+            </Route>
+            <Route exact path="/play" render={({ match }) => <Game />}></Route>
+          </Switch>
+        </Router>
       </Layout.Content>
     </Layout>
   );

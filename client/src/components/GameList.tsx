@@ -1,6 +1,6 @@
 import { Card, List, message } from 'antd';
 import { ethers } from 'ethers';
-import React, { FC, useEffect } from 'react';
+import React, { FC } from 'react';
 import { useSocket } from '../store/socket';
 import { formatRPCError } from '../utils';
 import { BrandButton } from './BrandButton';
