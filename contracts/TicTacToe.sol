@@ -97,15 +97,7 @@ contract TicTacToe {
         _verify(encodeMoves(gameId, moves), me, mySig);
         _verify(encodeMoves(gameId, moves[0:moves.length - 1]), opponent, opponentSig);
 
-        address[SIZE][SIZE] memory board;
-        State memory state = State({
-            lastPlayer: game.player1,  // player0 should start
-            board: board
-        });
-        for (uint256 i = 0; i < moves.length; i++) {
-            doMove(state, moves[i]);
-        }
-
+        State memory state = validateMoves(game.player1, moves);
         if (checkWinner(state.board, me)) {
             _endGame(game, WON, me);
             return;
@@ -115,6 +107,17 @@ contract TicTacToe {
             return;
         }
         revert("!end");
+    }
+
+    function validateMoves(address lastPlayer, Move[] calldata moves) public pure returns (State memory) {
+        State memory state = State({
+            lastPlayer: lastPlayer,
+            board: emptyBoard()
+        });
+        for (uint256 i = 0; i < moves.length; i++) {
+            doMove(state, moves[i]);
+        }
+        return state;
     }
 
     function encodeMoves(uint256 gameId, Move[] calldata moves) public view returns (bytes32) {
@@ -216,4 +219,6 @@ contract TicTacToe {
 
         return false;
     }
+
+    function emptyBoard() public pure returns (address[SIZE][SIZE] memory) {}
 }

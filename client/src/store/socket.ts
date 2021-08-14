@@ -9,6 +9,7 @@ import {
   GamePool,
   JoinGamePayload,
   ServerWsInterface,
+  UpdateGamePayload,
 } from '../../../server/types';
 import { useGames } from './games';
 
@@ -37,6 +38,9 @@ export const useSocket = () => {
       gamesStore.setCurrentGame(payload.gameId);
       message.success('Game started');
     });
+    socket.on('updateGame', (payload) => {
+      gamesStore.updateGame(payload.gameId, payload);
+    });
   });
   return {
     gamePool: socketStore.gamePool,
@@ -47,6 +51,9 @@ export const useSocket = () => {
     },
     joinGame(payload: JoinGamePayload) {
       socket.emit('joinGame', payload);
+    },
+    updateGame(payload: UpdateGamePayload) {
+      socket.emit('updateGame', payload);
     },
   };
 };

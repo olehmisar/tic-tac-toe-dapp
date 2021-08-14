@@ -49,6 +49,10 @@ io.on('connection', (socket) => {
     emitGamePool();
   });
 
+  socket.on('updateGame', (payload) => {
+    socket.broadcast.to(payload.gameId).emit('updateGame', payload);
+  });
+
   socket.on('disconnect', () => {
     console.log(`user disconnected ${socket.id}`);
   });

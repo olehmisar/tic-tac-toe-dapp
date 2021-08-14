@@ -1,5 +1,4 @@
-import cloneDeep from 'lodash/cloneDeep';
-import React, { FC, useState } from 'react';
+import React, { FC } from 'react';
 import { Game } from '../store/games';
 import { BrandButton } from './BrandButton';
 
@@ -16,29 +15,16 @@ const Cell: FC<CellProps> = ({ onClick, children }) => {
 
 type Props = {
   game: Game;
+  onMove: (i: number, j: number) => Promise<void>;
 };
-export const Board: FC<Props> = ({ game }) => {
-  const [board, setBoard] = useState([
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
-  ]);
+export const Board: FC<Props> = ({ game, onMove }) => {
   return (
     <div>
-      {board.map((row, i) => (
+      {game.state.board.map((row, i) => (
         <div key={i} style={{ display: 'flex' }}>
           {row.map((cell, j) => (
-            <Cell
-              key={j}
-              onClick={async () => {
-                // TODO: should interact with socket io
-                console.log(`click on ${i} ${j}`);
-                const newBoard = cloneDeep(board);
-                newBoard[i][j] = 1;
-                setBoard(newBoard);
-              }}
-            >
-              {cell}
+            <Cell key={j} onClick={async () => await onMove(i, j)}>
+              {addressToSymbol(cell, game.me, game.opponent)}
             </Cell>
           ))}
         </div>
@@ -46,3 +32,13 @@ export const Board: FC<Props> = ({ game }) => {
     </div>
   );
 };
+
+function addressToSymbol(address: string, addressA: string, addressB: string) {
+  const [address0, address1] = addressA < addressB ? [addressA, addressB] : [addressB, addressA];
+  if (address == address0) {
+    return 'X';
+  } else if (address == address1) {
+    return 'O';
+  }
+  return ' ';
+}
