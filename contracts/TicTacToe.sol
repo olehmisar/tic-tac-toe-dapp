@@ -38,7 +38,8 @@ contract TicTacToe {
     function startGame(address player0, address player1, bytes calldata sig0, bytes calldata sig1) external {
         require(player0 != player1, "same address");
         bytes32 hash = encodeGameStart(player0, player1);
-        _verify(hash, player0, sig0);
+        // TODO: uncomment
+        // _verify(hash, player0, sig0);
         _verify(hash, player1, sig1);
         getGame.push(Game({
             player0: player0,
