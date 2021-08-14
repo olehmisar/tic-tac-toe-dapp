@@ -4,11 +4,10 @@ import { useGames } from '../store/games';
 import { NotFound } from './NotFound';
 
 type Props = {
-  gamePoolId: string;
+  gameId: string;
 };
-export const Game: FC<Props> = ({ gamePoolId }) => {
-  console.log('games', useGames().games);
-  const game = useGames().games[gamePoolId];
+export const Game: FC<Props> = ({ gameId }) => {
+  const game = useGames().games[gameId];
   if (!game) {
     return <NotFound title="Game not found" />;
   }

@@ -20,7 +20,10 @@ struct Move {
 contract TicTacToe {
     error BadSignature(address signer);
 
-    Game[] public getGame;
+    mapping(uint256 => Game) public getGame;
+    mapping(address => uint256) public getGameId;
+    mapping(address => uint256) public nonces;
+
     uint8 public constant IN_PROGRESS = 0;
     uint8 public constant WON = 1;
     uint8 public constant DRAW = 2;
@@ -31,27 +34,35 @@ contract TicTacToe {
         address[SIZE][SIZE] board;
     }
 
-    function gamesLength() external view returns (uint256) {
-        return getGame.length;
-    }
-
-    function startGame(address player0, address player1, bytes calldata sig0, bytes calldata sig1) external {
-        require(player0 != player1, "same address");
-        bytes32 hash = encodeGameStart(player0, player1);
+    function startGame(address creator, address joined, bytes calldata sig0, bytes calldata sig1) external {
+        require(creator != joined, "same address");
+        require(getGameId[creator] == 0, "already playing");
+        require(getGameId[joined] == 0, "already playing");
+        bytes32 hash = encodeGameStart(creator, joined);
         // TODO: uncomment
-        // _verify(hash, player0, sig0);
-        _verify(hash, player1, sig1);
-        getGame.push(Game({
-            player0: player0,
-            player1: player1,
+        // _verify(hash, creator, sig0);
+        _verify(hash, joined, sig1);
+
+        uint256 gameId = calcGameId(creator);
+        nonces[creator]++;
+        getGameId[creator] = gameId;
+        getGameId[joined] = gameId;
+        getGame[gameId] = Game({
+            player0: creator,
+            player1: joined,
             result: IN_PROGRESS,
             winner: address(0)
-        }));
+        });
     }
 
     function encodeGameStart(address player0, address player1) public view returns (bytes32) {
+        // TODO: include gameId in this calculation
         // TODO: FIXME this hash is not unique
         return keccak256(abi.encode(address(this), player0, player1));
+    }
+
+    function calcGameId(address creator) public view returns (uint256) {
+        return uint256(keccak256(abi.encode(address(this), creator, nonces[creator])));
     }
 
     function endGameWithWinner(
@@ -117,6 +128,8 @@ contract TicTacToe {
         }
         game.result = result;
         game.winner = winner;
+        getGameId[game.player0] = 0;
+        getGameId[game.player1] = 0;
     }
 
     function _validateMsgSender(address player0, address player1) private view returns (address me, address opponent) {

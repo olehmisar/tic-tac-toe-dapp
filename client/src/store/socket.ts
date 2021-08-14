@@ -3,10 +3,15 @@ import { useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
 import create from 'zustand';
 import { combine } from 'zustand/middleware';
-import { ClientWsInterface, GamePool, ServerWsInterface } from '../../../server/types';
+import {
+  ClientWsInterface,
+  CreateGamePayload,
+  GamePool,
+  JoinGamePayload,
+  ServerWsInterface,
+} from '../../../server/types';
 import { useGames } from './games';
 
-// TODO: refactor this file
 const socket: Socket<ClientWsInterface, ServerWsInterface> = io('http://127.0.0.1:8000');
 let initialized = false;
 
@@ -27,21 +32,21 @@ export const useSocket = () => {
     socket.on('gamePool', (gamePool) => {
       socketStore.setGamePool(gamePool);
     });
-    socket.on('gameMatched', (gamePoolId, me, opponent) => {
-      gamesStore.addGame({ gamePoolId, me: me.address, opponent: opponent.address });
-      gamesStore.setCurrentGame(gamePoolId);
+    socket.on('gameMatched', (payload) => {
+      gamesStore.addGame(payload);
+      gamesStore.setCurrentGame(payload.gameId);
       message.success('Game started');
     });
   });
   return {
     gamePool: socketStore.gamePool,
-    createGame(creator: string, signature: string) {
-      socket.emit('createGame', creator, signature, () => {
+    createGame(payload: CreateGamePayload) {
+      socket.emit('createGame', payload, () => {
         message.success('Successfully created a game');
       });
     },
-    joinGame(gamePoolId: string, player: string, signature: string) {
-      socket.emit('joinGame', gamePoolId, player, signature);
+    joinGame(payload: JoinGamePayload) {
+      socket.emit('joinGame', payload);
     },
   };
 };

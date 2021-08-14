@@ -1,4 +1,5 @@
 export type PendingGame = {
+  gameId: string;
   creator: string;
   signature: string;
   creatorSocketId: string;
@@ -6,17 +7,21 @@ export type PendingGame = {
 
 export type GamePool = Record<string, PendingGame>;
 
+export type CreateGamePayload = Pick<PendingGame, 'gameId' | 'creator' | 'signature'>;
+export type JoinGamePayload = { gameId: string; joined: string; signature: string };
 export type ServerWsInterface = {
-  createGame: (creator: string, signature: string, cb: (gamePoolId: string) => void) => void;
-  joinGame: (gamePoolId: string, player: string, signature: string) => void;
+  // TODO: remove this `cb`?
+  createGame: (payload: CreateGamePayload, cb: () => void) => void;
+  joinGame: (payload: JoinGamePayload) => void;
 };
 
+export type GameMatchedPayload = {
+  gameId: string;
+  me: string;
+  opponent: string;
+};
 export type ClientWsInterface = {
   error: (message: string) => void;
-  gameMatched: (
-    gamePoolId: string,
-    me: { address: string; signature: string },
-    opponent: { address: string; signature: string },
-  ) => void;
+  gameMatched: (payload: GameMatchedPayload) => void;
   gamePool: (gamePool: GamePool) => void;
 };

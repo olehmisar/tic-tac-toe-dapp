@@ -25,7 +25,7 @@ export const App: FC = () => {
           <Route exact path="/">
             <HomePage />
           </Route>
-          <Route exact path="/play/:gamePoolId" render={({ match }) => <Game {...match.params} />} />
+          <Route exact path="/play/:gameId" render={({ match }) => <Game {...match.params} />} />
           <Route>
             <NotFound />
           </Route>

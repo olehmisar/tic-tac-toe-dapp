@@ -3,7 +3,7 @@ import create from 'zustand';
 import { combine, persist } from 'zustand/middleware';
 
 export type Game = {
-  gamePoolId: string;
+  gameId: string;
   me: string;
   opponent: string;
 };
@@ -14,8 +14,8 @@ export const useGames = () => {
   return {
     games,
     addGame,
-    setCurrentGame(gamePoolId: string) {
-      history.push(`/play/${gamePoolId}`);
+    setCurrentGame(gameId: string) {
+      history.push(`/play/${gameId}`);
     },
   };
 };
@@ -28,7 +28,7 @@ const useGamesStore = create(
       },
       (set, get) => ({
         addGame(game: Game) {
-          set({ games: { ...get().games, [game.gamePoolId]: game } });
+          set({ games: { ...get().games, [game.gameId]: game } });
         },
       }),
     ),

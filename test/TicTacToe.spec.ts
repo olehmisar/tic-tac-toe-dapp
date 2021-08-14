@@ -17,15 +17,13 @@ const WON = 1;
 const DRAW = 2;
 
 describe('TicTacToe', () => {
-  let player0Account: SignerWithAddress, player1Account: SignerWithAddress;
-  let player0: string, player1: string;
+  let player0Account: SignerWithAddress, player1Account: SignerWithAddress, player2Account: SignerWithAddress;
+  let player0: string, player1: string, player2: string;
   let lobby: TicTacToe;
   let drawMoves: Move[];
   before(async () => {
-    [player0Account, player1Account] = await ethers.getSigners();
-    [player0, player1] = [player0Account, player1Account].map((acc) => acc.address);
-
-    lobby = await (await ethers.getContractFactory('TicTacToe')).deploy();
+    [player0Account, player1Account, player2Account] = await ethers.getSigners();
+    [player0, player1, player2] = [player0Account, player1Account, player2Account].map((acc) => acc.address);
 
     drawMoves = [
       { player: player0, i: 0, j: 0 },
@@ -38,6 +36,10 @@ describe('TicTacToe', () => {
       { player: player1, i: 2, j: 2 },
       { player: player0, i: 2, j: 1 },
     ];
+  });
+
+  beforeEach(async () => {
+    lobby = await (await ethers.getContractFactory('TicTacToe')).deploy();
   });
 
   async function signGameStart(signer: SignerWithAddress, player0: string, player1: string) {
@@ -55,6 +57,22 @@ describe('TicTacToe', () => {
     ]);
   }
 
+  async function signWinner(signer: SignerWithAddress, gameId: BigNumberish, result: BigNumberish, winner: string) {
+    return await signer.signMessage(arrayify(await lobby.encodeWinner(gameId, result, winner)));
+  }
+
+  async function startGame(acc0: SignerWithAddress, acc1: SignerWithAddress) {
+    const sig0 = await signGameStart(acc0, acc0.address, acc1.address);
+    const sig1 = await signGameStart(acc1, acc0.address, acc1.address);
+    return await lobby.startGame(acc0.address, acc1.address, sig0, sig1);
+  }
+
+  async function endGame(gameId: BigNumberish) {
+    const sig0 = await signWinner(player0Account, gameId, DRAW, AddressZero);
+    const sig1 = await signWinner(player1Account, gameId, DRAW, AddressZero);
+    await lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1);
+  }
+
   describe('constructor', () => {
     it('should have correct info', async () => {
       expect(await lobby.IN_PROGRESS()).to.eq(IN_PROGRESS);
@@ -69,7 +87,8 @@ describe('TicTacToe', () => {
       const sig0 = await signGameStart(player0Account, player0, player1);
       const sig1 = await signGameStart(player1Account, player0, player1);
       await lobby.startGame(player0, player1, sig0, sig1);
-      const game = await lobby.getGame(0);
+      const gameId = await lobby.getGameId(player0);
+      const game = await lobby.getGame(gameId);
       expect(game.player0).to.eq(player0);
       expect(game.player1).to.eq(player1);
       expect(game.result).to.eq(IN_PROGRESS);
@@ -88,9 +107,38 @@ describe('TicTacToe', () => {
     });
 
     it('should NOT create a game with themselves', async () => {
-      const sig0 = await signGameStart(player0Account, player0, player0);
-      const sig1 = await signGameStart(player0Account, player0, player0);
-      await expect(lobby.startGame(player0, player0, sig0, sig1)).to.be.revertedWith('same address');
+      await expect(startGame(player0Account, player0Account)).to.be.revertedWith('same address');
+    });
+
+    it('should NOT allow two games for the same user simultaneously', async () => {
+      await startGame(player0Account, player1Account);
+      await expect(startGame(player0Account, player1Account)).to.be.revertedWith('already playing');
+      await expect(startGame(player0Account, player2Account)).to.be.revertedWith('already playing');
+      await expect(startGame(player1Account, player2Account)).to.be.revertedWith('already playing');
+      await expect(startGame(player2Account, player1Account)).to.be.revertedWith('already playing');
+    });
+
+    it('should allow to play again after game is finished', async () => {
+      await startGame(player0Account, player1Account);
+      const gameId = await lobby.getGameId(player0);
+      await expect(startGame(player0Account, player1Account)).to.be.revertedWith('already playing');
+      await endGame(gameId);
+      await startGame(player0Account, player1Account); // OK
+    });
+  });
+
+  describe('#getGameId', () => {
+    it('should create the same game ID for both players', async () => {
+      await startGame(player0Account, player1Account);
+      expect(await lobby.getGameId(player0)).to.eq(await lobby.getGameId(player1));
+    });
+
+    it('should create different game IDs for different games', async () => {
+      await startGame(player0Account, player1Account);
+      const gameId = await lobby.getGameId(player0);
+      await endGame(gameId);
+      await startGame(player0Account, player1Account);
+      expect(await lobby.getGameId(player0)).to.not.eq(gameId);
     });
   });
 
@@ -98,10 +146,8 @@ describe('TicTacToe', () => {
     let gameId: BigNumberish;
     let validMoves: Move[];
     beforeEach(async () => {
-      const sig0 = await signGameStart(player0Account, player0, player1);
-      const sig1 = await signGameStart(player1Account, player0, player1);
-      await lobby.startGame(player0, player1, sig0, sig1);
-      gameId = (await lobby.gamesLength()).sub(1);
+      await startGame(player0Account, player1Account);
+      gameId = await lobby.getGameId(player0);
       validMoves = [
         { player: player0, i: 0, j: 0 },
         { player: player1, i: 1, j: 0 },
@@ -176,19 +222,13 @@ describe('TicTacToe', () => {
   describe('#endGameWithWinner', () => {
     let gameId: BigNumberish;
     beforeEach(async () => {
-      const sig0 = await signGameStart(player0Account, player0, player1);
-      const sig1 = await signGameStart(player1Account, player0, player1);
-      await lobby.startGame(player0, player1, sig0, sig1);
-      gameId = (await lobby.gamesLength()).sub(1);
+      await startGame(player0Account, player1Account);
+      gameId = await lobby.getGameId(player0);
     });
 
-    async function signWinner(signer: SignerWithAddress, result: BigNumberish, winner: string) {
-      return await signer.signMessage(arrayify(await lobby.encodeWinner(gameId, result, winner)));
-    }
-
     it('should end the game with valid signatures and the same winner', async () => {
-      const sig0 = await signWinner(player0Account, WON, player0);
-      const sig1 = await signWinner(player1Account, WON, player0);
+      const sig0 = await signWinner(player0Account, gameId, WON, player0);
+      const sig1 = await signWinner(player1Account, gameId, WON, player0);
       await lobby.endGameWithWinner(gameId, WON, player0, sig0, sig1);
       const game = await lobby.getGame(gameId);
       expect(game.result).to.eq(WON);
@@ -196,8 +236,8 @@ describe('TicTacToe', () => {
     });
 
     it('should end the game with draw result', async () => {
-      const sig0 = await signWinner(player0Account, DRAW, AddressZero);
-      const sig1 = await signWinner(player1Account, DRAW, AddressZero);
+      const sig0 = await signWinner(player0Account, gameId, DRAW, AddressZero);
+      const sig1 = await signWinner(player1Account, gameId, DRAW, AddressZero);
       await lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1);
       const game = await lobby.getGame(gameId);
       expect(game.result).to.eq(DRAW);
@@ -205,8 +245,8 @@ describe('TicTacToe', () => {
     });
 
     it('should NOT end the game with different winner', async () => {
-      const sig0 = await signWinner(player0Account, WON, player0);
-      const sig1 = await signWinner(player1Account, WON, player1);
+      const sig0 = await signWinner(player0Account, gameId, WON, player0);
+      const sig1 = await signWinner(player1Account, gameId, WON, player1);
       await expect(lobby.endGameWithWinner(gameId, WON, player0, sig0, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player1}")'`,
       );
@@ -216,8 +256,8 @@ describe('TicTacToe', () => {
     });
 
     it('should NOT end the game with invalid signatures', async () => {
-      const sig0 = await signWinner(player0Account, WON, player0);
-      const sig1 = await signWinner(player1Account, WON, player0);
+      const sig0 = await signWinner(player0Account, gameId, WON, player0);
+      const sig1 = await signWinner(player1Account, gameId, WON, player0);
       await expect(lobby.endGameWithWinner(gameId, WON, player0, sig0, sig0)).to.be.revertedWith(
         `custom error 'BadSignature("${player1}")'`,
       );
@@ -227,21 +267,21 @@ describe('TicTacToe', () => {
     });
 
     it('should NOT end the game with draw result and non-zero address', async () => {
-      const sig0 = await signWinner(player0Account, DRAW, player0);
-      const sig1 = await signWinner(player1Account, DRAW, player0);
+      const sig0 = await signWinner(player0Account, gameId, DRAW, player0);
+      const sig1 = await signWinner(player1Account, gameId, DRAW, player0);
       await expect(lobby.endGameWithWinner(gameId, DRAW, player0, sig0, sig1)).to.be.revertedWith('!address(0)');
     });
 
     it('should NOT end the game after win', async () => {
-      const sig0 = await signWinner(player0Account, WON, player0);
-      const sig1 = await signWinner(player1Account, WON, player0);
+      const sig0 = await signWinner(player0Account, gameId, WON, player0);
+      const sig1 = await signWinner(player1Account, gameId, WON, player0);
       await lobby.endGameWithWinner(gameId, WON, player0, sig0, sig1);
       await expect(lobby.endGameWithWinner(gameId, WON, player0, sig0, sig1)).to.be.revertedWith('game ended');
     });
 
     it('should NOT end the game after draw', async () => {
-      const sig0 = await signWinner(player0Account, DRAW, AddressZero);
-      const sig1 = await signWinner(player1Account, DRAW, AddressZero);
+      const sig0 = await signWinner(player0Account, gameId, DRAW, AddressZero);
+      const sig1 = await signWinner(player1Account, gameId, DRAW, AddressZero);
       await lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1);
       await expect(lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1)).to.be.revertedWith('game ended');
     });
@@ -250,10 +290,8 @@ describe('TicTacToe', () => {
   describe('win combinations', () => {
     let gameId: BigNumberish;
     beforeEach(async () => {
-      const sig0 = await signGameStart(player0Account, player0, player1);
-      const sig1 = await signGameStart(player1Account, player0, player1);
-      await lobby.startGame(player0, player1, sig0, sig1);
-      gameId = (await lobby.gamesLength()).sub(1);
+      await startGame(player0Account, player1Account);
+      gameId = await lobby.getGameId(player0);
     });
 
     // i, j indices, alternating by player

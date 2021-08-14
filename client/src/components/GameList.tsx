@@ -10,9 +10,9 @@ export const GameList: FC = () => {
   const socket = useSocket();
   return (
     <List
-      dataSource={Object.entries(socket.gamePool)}
-      renderItem={([gamePoolId, game]) => (
-        <List.Item key={gamePoolId}>
+      dataSource={Object.values(socket.gamePool)}
+      renderItem={(game) => (
+        <List.Item key={game.gameId}>
           <Card>{game.creator}</Card>
           <ConnectOr>
             {({ provider, ticTacToe }) => (
@@ -25,7 +25,7 @@ export const GameList: FC = () => {
                       ethers.utils.arrayify(await ticTacToe.encodeGameStart(game.creator, address)),
                     );
                     await ticTacToe.startGame(game.creator, address, game.signature, signature);
-                    socket.joinGame(gamePoolId, address, signature);
+                    socket.joinGame({ gameId: game.gameId, joined: address, signature });
                   } catch (e) {
                     message.error(formatRPCError(e));
                     return;

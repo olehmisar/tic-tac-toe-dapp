@@ -21,35 +21,31 @@ io.on('connection', (socket) => {
   const emitGamePool = () => io.emit('gamePool', gamePool);
   emitGamePool();
 
-  socket.on('createGame', (creator, signature, cb) => {
-    const gamePoolId = `game_pool_${socket.id}`;
-    if (gamePool[gamePoolId]) {
+  socket.on('createGame', (payload, cb) => {
+    if (gamePool[payload.gameId]) {
       socket.emit('error', 'You cannot create more than two games');
       return;
     }
-    gamePool[gamePoolId] = {
-      creator,
-      signature,
+    gamePool[payload.gameId] = {
+      ...payload,
       creatorSocketId: socket.id,
     };
-    socket.join(gamePoolId);
-    console.log('new game', gamePoolId);
+    socket.join(payload.gameId);
+    console.log('new game', payload.gameId);
     emitGamePool();
-    cb(gamePoolId);
+    cb();
   });
 
-  socket.on('joinGame', (gamePoolId, player, signature) => {
-    const game = gamePool[gamePoolId];
+  socket.on('joinGame', ({ gameId, joined }) => {
+    const game = gamePool[gameId];
     if (!game) {
       socket.emit('error', 'Game not found');
       return;
     }
-    delete gamePool[gamePoolId];
-    socket.join(gamePoolId);
-    const creator = { address: game.creator, signature: game.signature };
-    const joined = { address: player, signature };
-    io.to(game.creatorSocketId).emit('gameMatched', gamePoolId, creator, joined);
-    socket.emit('gameMatched', gamePoolId, joined, creator);
+    delete gamePool[gameId];
+    socket.join(gameId);
+    io.to(game.creatorSocketId).emit('gameMatched', { gameId, me: game.creator, opponent: joined });
+    socket.emit('gameMatched', { gameId, me: joined, opponent: game.creator });
     emitGamePool();
   });
 
