@@ -74,7 +74,7 @@ contract TicTacToe {
     ) external {
         Game storage game = getGame[gameId];
         require(game.result == IN_PROGRESS, "game ended");
-        (address me, address opponent) = _validateMsgSender(game.player0, game.player1);
+        (address me, address opponent) = _validateMsgSender(game);
         bytes32 hash = encodeWinner(gameId, result, winner);
         _verify(hash, me, mySig);
         _verify(hash, opponent, opponentSig);
@@ -82,7 +82,7 @@ contract TicTacToe {
     }
 
     function encodeWinner(uint256 gameId, uint8 result, address winner) public view returns (bytes32) {
-        return keccak256(abi.encode(address(this), result, gameId, winner));
+        return keccak256(abi.encode(address(this), gameId, result, winner));
     }
 
     function endGameWithMoves(
@@ -93,39 +93,60 @@ contract TicTacToe {
     ) external {
         Game storage game = getGame[gameId];
         require(game.result == IN_PROGRESS, "game ended");
-        (address me, address opponent) = _validateMsgSender(game.player0, game.player1);
-        _verify(encodeMoves(gameId, moves), me, mySig);
-        _verify(encodeMoves(gameId, moves[0:moves.length - 1]), opponent, opponentSig);
-
-        State memory state = validateMoves(game.player1, moves);
-        if (checkWinner(state.board, me)) {
-            _endGame(game, WON, me);
-            return;
-        }
-        if (!checkWinner(state.board, opponent) && moves.length == SIZE * SIZE) {
-            _endGame(game, DRAW, address(0));
-            return;
-        }
-        revert("!end");
+        (, uint8 result, address winner) = validateMoves(gameId, moves, mySig, opponentSig);
+        _endGame(game, result, winner);
     }
 
-    function validateMoves(address lastPlayer, Move[] calldata moves) public pure returns (State memory) {
-        State memory state = State({
-            lastPlayer: lastPlayer,
-            board: emptyBoard()
-        });
+    function validateMoves(
+        uint256 gameId,
+        Move[] calldata moves,
+        bytes calldata mySig,
+        bytes calldata opponentSig
+    ) public view returns (State memory state, uint8 result, address winner) {
+        require(moves.length > 0, "!moves");
+        (address me, address opponent) = _validateMsgSender(getGame[gameId]);
+        address lastPlayer = moves[moves.length - 1].player;
+        _verifyMoves(gameId, moves, me, mySig, lastPlayer == me);
+        _verifyMoves(gameId, moves, opponent, opponentSig, lastPlayer == opponent);
+        state = initialState(gameId);
         for (uint256 i = 0; i < moves.length; i++) {
             doMove(state, moves[i]);
         }
-        return state;
+        (result, winner) = checkWinners(state, moves.length, me, opponent);
     }
 
     function encodeMoves(uint256 gameId, Move[] calldata moves) public view returns (bytes32) {
         return keccak256(abi.encode(address(this), gameId, moves));
     }
 
+    function _verifyMoves(uint256 gameId, Move[] calldata moves, address signer, bytes calldata signature, bool isLast) private view {
+        _verify(encodeMoves(gameId, moves[0:moves.length - (isLast ? 0 : 1)]), signer, signature);
+    }
+
+    function checkWinners(
+        State memory state,
+        uint256 movesLength,
+        address me,
+        address opponent
+    ) public pure returns (uint8 result, address winner) {
+        (result, winner) = (IN_PROGRESS, address(0));
+        bool iWon = checkWinner(state.board, me);
+        bool opponentWon = checkWinner(state.board, opponent);
+        if (iWon) {
+            require(!opponentWon, "two winners");
+            return (WON, me);
+        }
+        if (opponentWon) {
+            return (WON, opponent);
+        }
+        if (movesLength == SIZE * SIZE) {
+            return (DRAW, address(0));
+        }
+        return (IN_PROGRESS, address(0));
+    }
+
     function _endGame(Game storage game, uint8 result, address winner) private {
-        require(result == DRAW || result == WON, "bad result");
+        require(result == DRAW || result == WON, "!end");
         if (result == DRAW) {
             require(winner == address(0), "!address(0)");
         }
@@ -135,7 +156,8 @@ contract TicTacToe {
         getGameId[game.player1] = 0;
     }
 
-    function _validateMsgSender(address player0, address player1) private view returns (address me, address opponent) {
+    function _validateMsgSender(Game storage game) private view returns (address me, address opponent) {
+        (address player0, address player1) = (game.player0, game.player1);
         if (player0 == msg.sender) {
             (me, opponent) = (player0, player1);
         } else {
@@ -155,6 +177,15 @@ contract TicTacToe {
     }
 
     // GAME LOGIC
+    function initialState(uint256 gameId) public view returns (State memory) {
+        Game storage game = getGame[gameId];
+        address[SIZE][SIZE] memory board;
+        return State({
+            lastPlayer: game.player1, // player0 should start
+            board: board
+        });
+    }
+
     function doMove(State memory state, Move calldata move) public pure returns (State memory) {
         require(state.board[move.i][move.j] == address(0), "!empty");
         require(move.player != state.lastPlayer, "!turn");
@@ -219,6 +250,4 @@ contract TicTacToe {
 
         return false;
     }
-
-    function emptyBoard() public pure returns (address[SIZE][SIZE] memory) {}
 }

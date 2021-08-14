@@ -3,15 +3,15 @@ import { Move } from '../client/src/store/games';
 export type PendingGame = {
   gameId: string;
   creator: string;
-  signature: string;
+  creatorMovesSignature: string;
   creatorSocketId: string;
 };
 
 export type GamePool = Record<string, PendingGame>;
 
-export type CreateGamePayload = Pick<PendingGame, 'gameId' | 'creator' | 'signature'>;
-export type JoinGamePayload = { gameId: string; joined: string; signature: string };
-export type UpdateGamePayload = { gameId: string; moves: Move[]; board: string[][] };
+export type CreateGamePayload = Pick<PendingGame, 'gameId' | 'creator' | 'creatorMovesSignature'>;
+export type JoinGamePayload = { gameId: string; joined: string; joinedMovesSignature: string };
+export type UpdateGamePayload = { gameId: string; moves: Move[]; signature: string };
 export type ServerWsInterface = {
   // TODO: remove this `cb`?
   createGame: (payload: CreateGamePayload, cb: () => void) => void;
@@ -22,7 +22,9 @@ export type ServerWsInterface = {
 export type GameMatchedPayload = {
   gameId: string;
   me: string;
+  myMovesSignature: string;
   opponent: string;
+  opponentMovesSignature: string;
 };
 export type ClientWsInterface = {
   error: (message: string) => void;

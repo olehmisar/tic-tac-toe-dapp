@@ -38,11 +38,9 @@ export const useSocket = () => {
       gamesStore.setCurrentGame(payload.gameId);
       message.success('Game started');
     });
-    socket.on('updateGame', (payload) => {
-      gamesStore.updateGame(payload.gameId, payload);
-    });
   });
   return {
+    socket,
     gamePool: socketStore.gamePool,
     createGame(payload: CreateGamePayload) {
       socket.emit('createGame', payload, () => {

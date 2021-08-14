@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react';
+import React, { FC } from 'react';
 import { Board } from '../components/Board';
 import { ConnectOr } from '../components/ConnectOr';
 import { useGame } from '../store/games';
@@ -14,16 +14,14 @@ export const Game: FC<Props> = ({ gameId }) => {
   if (!state) {
     return <NotFound title="Game not found" />;
   }
-  useEffect(() => {
-    socket.updateGame({ ...state.game.state, gameId: state.game.gameId });
-  }, [state.game.state.moves.length]);
   return (
     <ConnectOr>
-      {({ ticTacToe }) => (
+      {({ provider, ticTacToe }) => (
         <Board
           game={state.game}
           onMove={async (i, j) => {
-            await state.makeMove(ticTacToe, { player: state.game.me, i, j });
+            const signer = provider.getSigner();
+            await state.makeMove(signer, ticTacToe, { player: state.game.me, i, j });
           }}
         />
       )}

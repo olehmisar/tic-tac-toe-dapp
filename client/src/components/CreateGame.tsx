@@ -1,5 +1,5 @@
+import { arrayify } from '@ethersproject/bytes';
 import { message } from 'antd';
-import { arrayify, keccak256 } from 'ethers/lib/utils';
 import React, { FC } from 'react';
 import { useSocket } from '../store/socket';
 import { formatRPCError } from '../utils';
@@ -17,9 +17,9 @@ export const CreateGame: FC = () => {
             try {
               const signer = provider.getSigner();
               const address = await signer.getAddress();
-              const signature = await signer.signMessage(arrayify(keccak256(address)));
               const gameId = (await ticTacToe.calcGameId(address)).toString();
-              socket.createGame({ gameId, creator: address, signature });
+              const movesSignature = await signer.signMessage(arrayify(await ticTacToe.encodeMoves(gameId, [])));
+              socket.createGame({ gameId, creator: address, creatorMovesSignature: movesSignature });
             } catch (e) {
               message.error(formatRPCError(e));
             }

@@ -51,10 +51,9 @@ describe('TicTacToe', () => {
   }
 
   async function signMovesForBoth(gameId: BigNumberish, moves: Move[]) {
-    return await Promise.all([
-      signMoves(player0Account, gameId, moves),
-      signMoves(player1Account, gameId, moves.slice(0, moves.length - 1)),
-    ]);
+    const slicedMoves = moves.slice(0, -1);
+    const [moves0, moves1] = moves[moves.length - 1].player === player0 ? [moves, slicedMoves] : [slicedMoves, moves];
+    return await Promise.all([signMoves(player0Account, gameId, moves0), signMoves(player1Account, gameId, moves1)]);
   }
 
   async function signWinner(signer: SignerWithAddress, gameId: BigNumberish, result: BigNumberish, winner: string) {

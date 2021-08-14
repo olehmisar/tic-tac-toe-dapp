@@ -1,5 +1,5 @@
+import { arrayify } from '@ethersproject/bytes';
 import { Card, List, message } from 'antd';
-import { ethers } from 'ethers';
 import React, { FC } from 'react';
 import { useSocket } from '../store/socket';
 import { formatRPCError } from '../utils';
@@ -22,10 +22,13 @@ export const GameList: FC = () => {
                   const address = await signer.getAddress();
                   try {
                     const signature = await signer.signMessage(
-                      ethers.utils.arrayify(await ticTacToe.encodeGameStart(game.creator, address)),
+                      arrayify(await ticTacToe.encodeGameStart(game.creator, address)),
                     );
-                    await ticTacToe.startGame(game.creator, address, game.signature, signature);
-                    socket.joinGame({ gameId: game.gameId, joined: address, signature });
+                    const movesSignature = await signer.signMessage(
+                      arrayify(await ticTacToe.encodeMoves(game.gameId, [])),
+                    );
+                    await ticTacToe.startGame(game.creator, address, signature, signature);
+                    socket.joinGame({ gameId: game.gameId, joined: address, joinedMovesSignature: movesSignature });
                   } catch (e) {
                     message.error(formatRPCError(e));
                     return;
