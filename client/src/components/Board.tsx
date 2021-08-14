@@ -1,5 +1,6 @@
 import cloneDeep from 'lodash/cloneDeep';
 import React, { FC, useState } from 'react';
+import { Game } from '../store/games';
 import { BrandButton } from './BrandButton';
 
 type CellProps = {
@@ -13,7 +14,10 @@ const Cell: FC<CellProps> = ({ onClick, children }) => {
   );
 };
 
-export const Board: FC = () => {
+type Props = {
+  game: Game;
+};
+export const Board: FC<Props> = ({ game }) => {
   const [board, setBoard] = useState([
     [0, 0, 0],
     [0, 0, 0],

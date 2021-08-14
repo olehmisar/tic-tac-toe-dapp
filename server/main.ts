@@ -22,7 +22,7 @@ io.on('connection', (socket) => {
   emitGamePool();
 
   socket.on('createGame', (creator, signature, cb) => {
-    const gamePoolId = `Room: ${socket.id}`;
+    const gamePoolId = `game_pool_${socket.id}`;
     if (gamePool[gamePoolId]) {
       socket.emit('error', 'You cannot create more than two games');
       return;
