@@ -35,14 +35,22 @@ contract TicTacToe {
         return getGame.length;
     }
 
-    function startGame(address player0, address player1) external {
+    function startGame(address player0, address player1, bytes calldata sig0, bytes calldata sig1) external {
         require(player0 != player1, "same address");
+        bytes32 hash = encodeGameStart(player0, player1);
+        _verify(hash, player0, sig0);
+        _verify(hash, player1, sig1);
         getGame.push(Game({
             player0: player0,
             player1: player1,
             result: IN_PROGRESS,
             winner: address(0)
         }));
+    }
+
+    function encodeGameStart(address player0, address player1) public view returns (bytes32) {
+        // TODO: FIXME this hash is not unique
+        return keccak256(abi.encode(address(this), player0, player1));
     }
 
     function endGameWithWinner(
@@ -55,19 +63,14 @@ contract TicTacToe {
         Game storage game = getGame[gameId];
         require(game.result == IN_PROGRESS, "game ended");
         (address me, address opponent) = _validateMsgSender(game.player0, game.player1);
-        _verifyWinner(gameId, result, winner, me, mySig);
-        _verifyWinner(gameId, result, winner, opponent, opponentSig);
+        bytes32 hash = encodeWinner(gameId, result, winner);
+        _verify(hash, me, mySig);
+        _verify(hash, opponent, opponentSig);
         _endGame(game, result, winner);
     }
 
     function encodeWinner(uint256 gameId, uint8 result, address winner) public view returns (bytes32) {
         return keccak256(abi.encode(address(this), result, gameId, winner));
-    }
-
-    function _verifyWinner(uint256 gameId, uint8 result, address winner, address signer, bytes calldata signature) private view {
-        if (_recover(encodeWinner(gameId, result, winner), signature) != signer) {
-            revert BadSignature(signer);
-        }
     }
 
     function endGameWithMoves(
@@ -79,8 +82,8 @@ contract TicTacToe {
         Game storage game = getGame[gameId];
         require(game.result == IN_PROGRESS, "game ended");
         (address me, address opponent) = _validateMsgSender(game.player0, game.player1);
-        _verifyMoves(gameId, moves, me, mySig);
-        _verifyMoves(gameId, moves[0:moves.length - 1], opponent, opponentSig);
+        _verify(encodeMoves(gameId, moves), me, mySig);
+        _verify(encodeMoves(gameId, moves[0:moves.length - 1]), opponent, opponentSig);
 
         address[SIZE][SIZE] memory board;
         State memory state = State({
@@ -106,17 +109,6 @@ contract TicTacToe {
         return keccak256(abi.encode(address(this), gameId, moves));
     }
 
-    function _verifyMoves(
-        uint256 gameId,
-        Move[] calldata moves,
-        address signer,
-        bytes calldata signature
-    ) private view {
-        if (_recover(encodeMoves(gameId, moves), signature) != signer) {
-            revert BadSignature(signer);
-        }
-    }
-
     function _endGame(Game storage game, uint8 result, address winner) private {
         require(result == DRAW || result == WON, "bad result");
         if (result == DRAW) {
@@ -137,6 +129,12 @@ contract TicTacToe {
 
     function _recover(bytes32 hash, bytes calldata signature) private pure returns (address) {
         return ECDSA.recover(ECDSA.toEthSignedMessageHash(hash), signature);
+    }
+
+    function _verify(bytes32 hash, address signer, bytes calldata signature) private pure {
+        if (_recover(hash, signature) != signer) {
+            revert BadSignature(signer);
+        }
     }
 
     // GAME LOGIC

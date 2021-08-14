@@ -19,7 +19,7 @@ export const App: FC = () => {
                   onClick={async () => {
                     const address = await provider.getSigner().getAddress();
                     try {
-                      await ticTacToe.startGame(address, address);
+                      await ticTacToe.startGame(address, address, '', '');
                     } catch (e) {
                       await message.error(formatRPCError(e));
                     }
