@@ -8,14 +8,11 @@ import { ConnectOr } from './ConnectOr';
 
 export const GameList: FC = () => {
   const socket = useSocket();
-  useEffect(() => {
-    socket.listenToGamePool();
-  });
   return (
     <List
       dataSource={Object.entries(socket.gamePool)}
-      renderItem={([poolId, game]) => (
-        <List.Item key={poolId}>
+      renderItem={([gamePoolId, game]) => (
+        <List.Item key={gamePoolId}>
           <Card>{game.creator}</Card>
           <ConnectOr>
             {({ provider, ticTacToe }) => (
@@ -28,7 +25,7 @@ export const GameList: FC = () => {
                       ethers.utils.arrayify(await ticTacToe.encodeGameStart(game.creator, address)),
                     );
                     await ticTacToe.startGame(game.creator, address, game.signature, signature);
-                    socket.joinGame(Number(poolId), address, signature);
+                    socket.joinGame(gamePoolId, address, signature);
                   } catch (e) {
                     message.error(formatRPCError(e));
                     return;

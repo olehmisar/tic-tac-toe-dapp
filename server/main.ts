@@ -1,6 +1,6 @@
 import express from 'express';
 import { Server } from 'socket.io';
-import { ClientWsInterface, PendingGame, ServerWsInterface } from './types';
+import { ClientWsInterface, GamePool, ServerWsInterface } from './types';
 
 const app = express();
 const port = 8000;
@@ -14,32 +14,46 @@ const io = new Server<ServerWsInterface, ClientWsInterface>(server, {
   },
 });
 
-let gameId = 0;
-const gamePool: Record<number, PendingGame> = {};
+const gamePool: GamePool = {};
 io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.emit('gamePool', Object.fromEntries(Object.entries(gamePool).map(([id, game]) => [id, game.payload])));
+  console.log(`a user connected ${socket.id}`);
 
-  socket.on('createGame', (creator, signature) => {
-    gamePool[gameId++] = {
-      socket,
-      payload: {
-        creator,
-        signature,
-      },
+  const emitGamePool = () => io.emit('gamePool', gamePool);
+  emitGamePool();
+
+  socket.on('createGame', (creator, signature, cb) => {
+    const gamePoolId = `Room: ${socket.id}`;
+    if (gamePool[gamePoolId]) {
+      socket.emit('error', 'You cannot create more than two games');
+      return;
+    }
+    gamePool[gamePoolId] = {
+      creator,
+      signature,
+      creatorSocketId: socket.id,
     };
-
-    console.log('new game', gameId - 1);
-    socket.emit('gamePool', Object.fromEntries(Object.entries(gamePool).map(([id, game]) => [id, game.payload])));
+    socket.join(gamePoolId);
+    console.log('new game', gamePoolId);
+    emitGamePool();
+    cb(gamePoolId);
   });
 
-  socket.on('joinGame', (id, player, signature) => {
-    const game = gamePool[id];
-    delete gamePool[id];
-    game.socket.emit('gameMatched', id, player, signature);
+  socket.on('joinGame', (gamePoolId, player, signature) => {
+    const game = gamePool[gamePoolId];
+    if (!game) {
+      socket.emit('error', 'Game not found');
+      return;
+    }
+    delete gamePool[gamePoolId];
+    socket.join(gamePoolId);
+    const creator = { address: game.creator, signature: game.signature };
+    const joined = { address: player, signature };
+    io.to(game.creatorSocketId).emit('gameMatched', gamePoolId, creator, joined);
+    socket.emit('gameMatched', gamePoolId, joined, creator);
+    emitGamePool();
   });
 
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    console.log(`user disconnected ${socket.id}`);
   });
 });

@@ -1,3 +1,4 @@
+import { message } from 'antd';
 import { io, Socket } from 'socket.io-client';
 import create from 'zustand';
 import { combine } from 'zustand/middleware';
@@ -5,33 +6,48 @@ import { ClientWsInterface, GamePool, ServerWsInterface } from '../../../server/
 
 // TODO: refactor this file
 const socket: Socket<ClientWsInterface, ServerWsInterface> = io('http://127.0.0.1:8000');
-socket.on('connect', () => {
-  console.log('WS connected');
-});
+
+type Room = {
+  gamePoolId: string;
+  me: string;
+  opponent: string;
+};
 
 export const useSocket = create(
   combine(
     {
-      socket,
-      listening: false,
+      room: undefined as Room | undefined,
       gamePool: {} as GamePool,
+      _initialized: false,
     },
     (set, get) => {
       return {
-        listenToGamePool() {
-          if (get().listening) {
+        initialize() {
+          if (get()._initialized) {
             return;
           }
-          set({ listening: true });
-          get().socket.on('gamePool', (gamePool) => {
+          set({ _initialized: true });
+          socket.on('connect', () => {
+            console.log('WS connected');
+          });
+          socket.on('error', (err) => {
+            message.error(err);
+          });
+          socket.on('gamePool', (gamePool) => {
             set({ gamePool });
+          });
+          socket.on('gameMatched', (gamePoolId, me, opponent) => {
+            set({ room: { gamePoolId, me: me.address, opponent: opponent.address } });
+            message.success('Game started');
           });
         },
         createGame(creator: string, signature: string) {
-          get().socket.emit('createGame', creator, signature);
+          socket.emit('createGame', creator, signature, () => {
+            message.success('Successfully created a game');
+          });
         },
-        joinGame(gamePoolId: number, player: string, signature: string) {
-          get().socket.emit('joinGame', gamePoolId, player, signature);
+        joinGame(gamePoolId: string, player: string, signature: string) {
+          socket.emit('joinGame', gamePoolId, player, signature);
         },
       };
     },
