@@ -1,10 +1,10 @@
-import { Alert, message } from 'antd';
+import { Alert, message, Space } from 'antd';
 import React, { FC } from 'react';
+import { Await } from '../components/Await';
 import { Board } from '../components/Board';
 import { BrandButton } from '../components/BrandButton';
 import { ConnectOr } from '../components/ConnectOr';
 import { Result, useGame } from '../store/games';
-import { useSocket } from '../store/socket';
 import { formatRPCError } from '../utils';
 import { NotFound } from './NotFound';
 
@@ -13,7 +13,6 @@ type Props = {
 };
 export const Game: FC<Props> = ({ gameId }) => {
   const state = useGame(gameId);
-  const socket = useSocket();
   if (!state) {
     return <NotFound title="Game not found" />;
   }
@@ -21,7 +20,7 @@ export const Game: FC<Props> = ({ gameId }) => {
   return (
     <ConnectOr>
       {({ provider, ticTacToe }) => (
-        <>
+        <Space direction="vertical">
           {game.result === Result.DRAW && <Alert message="It's a draw" type="warning" />}
           {game.result === Result.WON && (
             <>
@@ -33,25 +32,31 @@ export const Game: FC<Props> = ({ gameId }) => {
             </>
           )}
           {game.result !== Result.IN_PROGRESS && (
-            <BrandButton
-              type="primary"
-              onClick={async () => {
-                try {
-                  const tx = await ticTacToe.endGameWithMoves(
-                    gameId,
-                    game.moves,
-                    game.myMovesSignature,
-                    game.opponentMovesSignature,
-                  );
-                  await tx.wait();
-                  message.success('Data committed successfully');
-                } catch (e) {
-                  message.error(formatRPCError(e));
-                }
-              }}
-            >
-              Commit data to blockchain
-            </BrandButton>
+            <Await promise={ticTacToe.getGame(gameId)}>
+              {(blockchainGame) =>
+                blockchainGame.result === Result.IN_PROGRESS && (
+                  <BrandButton
+                    type="primary"
+                    onClick={async () => {
+                      try {
+                        const tx = await ticTacToe.endGameWithMoves(
+                          gameId,
+                          game.moves,
+                          game.myMovesSignature,
+                          game.opponentMovesSignature,
+                        );
+                        await tx.wait();
+                        message.success('Data committed successfully');
+                      } catch (e) {
+                        message.error(formatRPCError(e));
+                      }
+                    }}
+                  >
+                    Commit data to blockchain
+                  </BrandButton>
+                )
+              }
+            </Await>
           )}
           <fieldset disabled={game.result !== Result.IN_PROGRESS}>
             <Board
@@ -62,7 +67,7 @@ export const Game: FC<Props> = ({ gameId }) => {
               }}
             />
           </fieldset>
-        </>
+        </Space>
       )}
     </ConnectOr>
   );

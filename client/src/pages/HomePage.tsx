@@ -1,14 +1,14 @@
-import { Typography } from 'antd';
+import { Divider, Space } from 'antd';
 import React, { FC } from 'react';
 import { CreateGame } from '../components/CreateGame';
 import { GameList } from '../components/GameList';
 
 export const HomePage: FC = () => {
   return (
-    <div>
-      <Typography.Title>Tic Tac Toe. Decentralized</Typography.Title>
+    <Space size="large" direction="vertical">
       <CreateGame />
+      <Divider>OR</Divider>
       <GameList />
-    </div>
+    </Space>
   );
 };

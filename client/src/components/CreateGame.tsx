@@ -13,6 +13,7 @@ export const CreateGame: FC = () => {
       {({ provider, ticTacToe }) => (
         <BrandButton
           type="primary"
+          size="large"
           onClick={async () => {
             try {
               const signer = provider.getSigner();
@@ -25,7 +26,7 @@ export const CreateGame: FC = () => {
             }
           }}
         >
-          Create game
+          Create Game
         </BrandButton>
       )}
     </ConnectOr>
