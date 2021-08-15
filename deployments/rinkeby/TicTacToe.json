@@ -1,0 +1,737 @@
+{
+  "address": "0x21D0ff1987462d576b3E449507d023d3d79fFFF5",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "signer",
+          "type": "address"
+        }
+      ],
+      "name": "BadSignature",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DRAW",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "IN_PROGRESS",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SIZE",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "WON",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        }
+      ],
+      "name": "calcGameId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[3][3]",
+          "name": "board",
+          "type": "address[3][3]"
+        },
+        {
+          "internalType": "address",
+          "name": "winner",
+          "type": "address"
+        }
+      ],
+      "name": "checkWinner",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "lastPlayer",
+              "type": "address"
+            },
+            {
+              "internalType": "address[3][3]",
+              "name": "board",
+              "type": "address[3][3]"
+            }
+          ],
+          "internalType": "struct TicTacToe.State",
+          "name": "state",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "movesLength",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "me",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "opponent",
+          "type": "address"
+        }
+      ],
+      "name": "checkWinners",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "result",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "winner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "lastPlayer",
+              "type": "address"
+            },
+            {
+              "internalType": "address[3][3]",
+              "name": "board",
+              "type": "address[3][3]"
+            }
+          ],
+          "internalType": "struct TicTacToe.State",
+          "name": "state",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "i",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "j",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Move",
+          "name": "move",
+          "type": "tuple"
+        }
+      ],
+      "name": "doMove",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "lastPlayer",
+              "type": "address"
+            },
+            {
+              "internalType": "address[3][3]",
+              "name": "board",
+              "type": "address[3][3]"
+            }
+          ],
+          "internalType": "struct TicTacToe.State",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "joined",
+          "type": "address"
+        }
+      ],
+      "name": "encodeGameStart",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "i",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "j",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Move[]",
+          "name": "moves",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "encodeMoves",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "result",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "winner",
+          "type": "address"
+        }
+      ],
+      "name": "encodeWinner",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "i",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "j",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Move[]",
+          "name": "moves",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "bytes",
+          "name": "mySig",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "opponentSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "endGameWithMoves",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "result",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "winner",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "mySig",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "opponentSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "endGameWithWinner",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "getGame",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "player0",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "player1",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "winner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "result",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "getGameId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialState",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "lastPlayer",
+              "type": "address"
+            },
+            {
+              "internalType": "address[3][3]",
+              "name": "board",
+              "type": "address[3][3]"
+            }
+          ],
+          "internalType": "struct TicTacToe.State",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "nonces",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "joined",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "creatorSig",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "joinedSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "startGame",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "player",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "i",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "j",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Move[]",
+          "name": "moves",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "bytes",
+          "name": "mySig",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "opponentSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "validateMoves",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "lastPlayer",
+              "type": "address"
+            },
+            {
+              "internalType": "address[3][3]",
+              "name": "board",
+              "type": "address[3][3]"
+            }
+          ],
+          "internalType": "struct TicTacToe.State",
+          "name": "state",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint8",
+          "name": "result",
+          "type": "uint8"
+        },
+        {
+          "internalType": "address",
+          "name": "winner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x92cdb87cd92071f1330435a3e8477023f0d5661d8649856d88ad0ee19e59e93c",
+  "receipt": {
+    "to": null,
+    "from": "0xc28Bf645b0ae0605747283A80553d54201D31544",
+    "contractAddress": "0x21D0ff1987462d576b3E449507d023d3d79fFFF5",
+    "transactionIndex": 18,
+    "gasUsed": "1554471",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x9a445b10edb51f855ff53b96daf115aa6c1bd02842e3012c419957d7af749687",
+    "transactionHash": "0x92cdb87cd92071f1330435a3e8477023f0d5661d8649856d88ad0ee19e59e93c",
+    "logs": [],
+    "blockNumber": 9120045,
+    "cumulativeGasUsed": "4437040",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "e5c5856950c993194bfcfee512e2a370",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"BadSignature\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"DRAW\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IN_PROGRESS\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SIZE\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"WON\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"}],\"name\":\"calcGameId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[3][3]\",\"name\":\"board\",\"type\":\"address[3][3]\"},{\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"}],\"name\":\"checkWinner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"lastPlayer\",\"type\":\"address\"},{\"internalType\":\"address[3][3]\",\"name\":\"board\",\"type\":\"address[3][3]\"}],\"internalType\":\"struct TicTacToe.State\",\"name\":\"state\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"movesLength\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"me\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"opponent\",\"type\":\"address\"}],\"name\":\"checkWinners\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"result\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"lastPlayer\",\"type\":\"address\"},{\"internalType\":\"address[3][3]\",\"name\":\"board\",\"type\":\"address[3][3]\"}],\"internalType\":\"struct TicTacToe.State\",\"name\":\"state\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"player\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"i\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"j\",\"type\":\"uint256\"}],\"internalType\":\"struct Move\",\"name\":\"move\",\"type\":\"tuple\"}],\"name\":\"doMove\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"lastPlayer\",\"type\":\"address\"},{\"internalType\":\"address[3][3]\",\"name\":\"board\",\"type\":\"address[3][3]\"}],\"internalType\":\"struct TicTacToe.State\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"joined\",\"type\":\"address\"}],\"name\":\"encodeGameStart\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"player\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"i\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"j\",\"type\":\"uint256\"}],\"internalType\":\"struct Move[]\",\"name\":\"moves\",\"type\":\"tuple[]\"}],\"name\":\"encodeMoves\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"result\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"}],\"name\":\"encodeWinner\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"player\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"i\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"j\",\"type\":\"uint256\"}],\"internalType\":\"struct Move[]\",\"name\":\"moves\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes\",\"name\":\"mySig\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"opponentSig\",\"type\":\"bytes\"}],\"name\":\"endGameWithMoves\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"result\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"mySig\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"opponentSig\",\"type\":\"bytes\"}],\"name\":\"endGameWithWinner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"getGame\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"player0\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"player1\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"result\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"getGameId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"}],\"name\":\"initialState\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"lastPlayer\",\"type\":\"address\"},{\"internalType\":\"address[3][3]\",\"name\":\"board\",\"type\":\"address[3][3]\"}],\"internalType\":\"struct TicTacToe.State\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"nonces\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"joined\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"creatorSig\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"joinedSig\",\"type\":\"bytes\"}],\"name\":\"startGame\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gameId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"player\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"i\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"j\",\"type\":\"uint256\"}],\"internalType\":\"struct Move[]\",\"name\":\"moves\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes\",\"name\":\"mySig\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"opponentSig\",\"type\":\"bytes\"}],\"name\":\"validateMoves\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"lastPlayer\",\"type\":\"address\"},{\"internalType\":\"address[3][3]\",\"name\":\"board\",\"type\":\"address[3][3]\"}],\"internalType\":\"struct TicTacToe.State\",\"name\":\"state\",\"type\":\"tuple\"},{\"internalType\":\"uint8\",\"name\":\"result\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"winner\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/TicTacToe.sol\":\"TicTacToe\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/utils/cryptography/ECDSA.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Elliptic Curve Digital Signature Algorithm (ECDSA) operations.\\n *\\n * These functions can be used to verify that a message was signed by the holder\\n * of the private keys of a given address.\\n */\\nlibrary ECDSA {\\n    /**\\n     * @dev Returns the address that signed a hashed message (`hash`) with\\n     * `signature`. This address can then be used for verification purposes.\\n     *\\n     * The `ecrecover` EVM opcode allows for malleable (non-unique) signatures:\\n     * this function rejects them by requiring the `s` value to be in the lower\\n     * half order, and the `v` value to be either 27 or 28.\\n     *\\n     * IMPORTANT: `hash` _must_ be the result of a hash operation for the\\n     * verification to be secure: it is possible to craft signatures that\\n     * recover to arbitrary addresses for non-hashed data. A safe way to ensure\\n     * this is by receiving a hash of the original message (which may otherwise\\n     * be too long), and then calling {toEthSignedMessageHash} on it.\\n     *\\n     * Documentation for signature generation:\\n     * - with https://web3js.readthedocs.io/en/v1.3.4/web3-eth-accounts.html#sign[Web3.js]\\n     * - with https://docs.ethers.io/v5/api/signer/#Signer-signMessage[ethers]\\n     */\\n    function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {\\n        // Check the signature length\\n        // - case 65: r,s,v signature (standard)\\n        // - case 64: r,vs signature (cf https://eips.ethereum.org/EIPS/eip-2098) _Available since v4.1._\\n        if (signature.length == 65) {\\n            bytes32 r;\\n            bytes32 s;\\n            uint8 v;\\n            // ecrecover takes the signature parameters, and the only way to get them\\n            // currently is to use assembly.\\n            assembly {\\n                r := mload(add(signature, 0x20))\\n                s := mload(add(signature, 0x40))\\n                v := byte(0, mload(add(signature, 0x60)))\\n            }\\n            return recover(hash, v, r, s);\\n        } else if (signature.length == 64) {\\n            bytes32 r;\\n            bytes32 vs;\\n            // ecrecover takes the signature parameters, and the only way to get them\\n            // currently is to use assembly.\\n            assembly {\\n                r := mload(add(signature, 0x20))\\n                vs := mload(add(signature, 0x40))\\n            }\\n            return recover(hash, r, vs);\\n        } else {\\n            revert(\\\"ECDSA: invalid signature length\\\");\\n        }\\n    }\\n\\n    /**\\n     * @dev Overload of {ECDSA-recover} that receives the `r` and `vs` short-signature fields separately.\\n     *\\n     * See https://eips.ethereum.org/EIPS/eip-2098[EIP-2098 short signatures]\\n     *\\n     * _Available since v4.2._\\n     */\\n    function recover(\\n        bytes32 hash,\\n        bytes32 r,\\n        bytes32 vs\\n    ) internal pure returns (address) {\\n        bytes32 s;\\n        uint8 v;\\n        assembly {\\n            s := and(vs, 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)\\n            v := add(shr(255, vs), 27)\\n        }\\n        return recover(hash, v, r, s);\\n    }\\n\\n    /**\\n     * @dev Overload of {ECDSA-recover} that receives the `v`, `r` and `s` signature fields separately.\\n     */\\n    function recover(\\n        bytes32 hash,\\n        uint8 v,\\n        bytes32 r,\\n        bytes32 s\\n    ) internal pure returns (address) {\\n        // EIP-2 still allows signature malleability for ecrecover(). Remove this possibility and make the signature\\n        // unique. Appendix F in the Ethereum Yellow paper (https://ethereum.github.io/yellowpaper/paper.pdf), defines\\n        // the valid range for s in (281): 0 < s < secp256k1n \\u00f7 2 + 1, and for v in (282): v \\u2208 {27, 28}. Most\\n        // signatures from current libraries generate a unique signature with an s-value in the lower half order.\\n        //\\n        // If your library generates malleable signatures, such as s-values in the upper range, calculate a new s-value\\n        // with 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 - s1 and flip v from 27 to 28 or\\n        // vice versa. If your library also generates signatures with 0/1 for v instead 27/28, add 27 to v to accept\\n        // these malleable signatures as well.\\n        require(\\n            uint256(s) <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,\\n            \\\"ECDSA: invalid signature 's' value\\\"\\n        );\\n        require(v == 27 || v == 28, \\\"ECDSA: invalid signature 'v' value\\\");\\n\\n        // If the signature is valid (and not malleable), return the signer address\\n        address signer = ecrecover(hash, v, r, s);\\n        require(signer != address(0), \\\"ECDSA: invalid signature\\\");\\n\\n        return signer;\\n    }\\n\\n    /**\\n     * @dev Returns an Ethereum Signed Message, created from a `hash`. This\\n     * produces hash corresponding to the one signed with the\\n     * https://eth.wiki/json-rpc/API#eth_sign[`eth_sign`]\\n     * JSON-RPC method as part of EIP-191.\\n     *\\n     * See {recover}.\\n     */\\n    function toEthSignedMessageHash(bytes32 hash) internal pure returns (bytes32) {\\n        // 32 is the length in bytes of hash,\\n        // enforced by the type signature above\\n        return keccak256(abi.encodePacked(\\\"\\\\x19Ethereum Signed Message:\\\\n32\\\", hash));\\n    }\\n\\n    /**\\n     * @dev Returns an Ethereum Signed Typed Data, created from a\\n     * `domainSeparator` and a `structHash`. This produces hash corresponding\\n     * to the one signed with the\\n     * https://eips.ethereum.org/EIPS/eip-712[`eth_signTypedData`]\\n     * JSON-RPC method as part of EIP-712.\\n     *\\n     * See {recover}.\\n     */\\n    function toTypedDataHash(bytes32 domainSeparator, bytes32 structHash) internal pure returns (bytes32) {\\n        return keccak256(abi.encodePacked(\\\"\\\\x19\\\\x01\\\", domainSeparator, structHash));\\n    }\\n}\\n\",\"keccak256\":\"0x828774372910d18e7337bc31a288d786748af4cd9da80222467e486ed1d569ab\",\"license\":\"MIT\"},\"contracts/TicTacToe.sol\":{\"content\":\"// SPDX-License-Identifier: Unlicense\\npragma solidity 0.8.4;\\n\\nimport {ECDSA} from \\\"@openzeppelin/contracts/utils/cryptography/ECDSA.sol\\\";\\n\\n\\nstruct Game {\\n    address player0;\\n    address player1;\\n    address winner;\\n    uint8 result;\\n}\\n\\nstruct Move {\\n    address player;\\n    uint256 i;\\n    uint256 j;\\n}\\n\\ncontract TicTacToe {\\n    error BadSignature(address signer);\\n\\n    mapping(uint256 => Game) public getGame;\\n    mapping(address => uint256) public getGameId;\\n    mapping(address => uint256) public nonces;\\n\\n    uint8 public constant IN_PROGRESS = 0;\\n    uint8 public constant WON = 1;\\n    uint8 public constant DRAW = 2;\\n\\n    uint8 public constant SIZE = 3;\\n    struct State {\\n        address lastPlayer;\\n        address[SIZE][SIZE] board;\\n    }\\n\\n    function startGame(address creator, address joined, bytes calldata creatorSig, bytes calldata joinedSig) external {\\n        require(creator != joined, \\\"same address\\\");\\n        require(getGameId[creator] == 0, \\\"already playing\\\");\\n        require(getGameId[joined] == 0, \\\"already playing\\\");\\n        uint256 gameId = calcGameId(creator);\\n        // TODO: should we include `joined` in `creatorSig`?\\n        _verify(encodeGameStart(gameId, creator, address(0)), creator, creatorSig);\\n        _verify(encodeGameStart(gameId, creator, joined), joined, joinedSig);\\n        nonces[creator]++;\\n        getGameId[creator] = gameId;\\n        getGameId[joined] = gameId;\\n        getGame[gameId] = Game({\\n            player0: creator,\\n            player1: joined,\\n            result: IN_PROGRESS,\\n            winner: address(0)\\n        });\\n    }\\n\\n    function encodeGameStart(uint256 gameId, address creator, address joined) public view returns (bytes32) {\\n        return keccak256(abi.encode(address(this), gameId, creator, joined));\\n    }\\n\\n    function calcGameId(address creator) public view returns (uint256) {\\n        return uint256(keccak256(abi.encode(address(this), creator, nonces[creator])));\\n    }\\n\\n    function endGameWithWinner(\\n        uint256 gameId,\\n        uint8 result,\\n        address winner,\\n        bytes calldata mySig,\\n        bytes calldata opponentSig\\n    ) external {\\n        Game storage game = getGame[gameId];\\n        require(game.result == IN_PROGRESS, \\\"game ended\\\");\\n        (address me, address opponent) = _validateMsgSender(game);\\n        bytes32 hash = encodeWinner(gameId, result, winner);\\n        _verify(hash, me, mySig);\\n        _verify(hash, opponent, opponentSig);\\n        _endGame(game, result, winner);\\n    }\\n\\n    function encodeWinner(uint256 gameId, uint8 result, address winner) public view returns (bytes32) {\\n        return keccak256(abi.encode(address(this), gameId, result, winner));\\n    }\\n\\n    function endGameWithMoves(\\n        uint256 gameId,\\n        Move[] calldata moves,\\n        bytes calldata mySig,\\n        bytes calldata opponentSig\\n    ) external {\\n        Game storage game = getGame[gameId];\\n        require(game.result == IN_PROGRESS, \\\"game ended\\\");\\n        (, uint8 result, address winner) = validateMoves(gameId, moves, mySig, opponentSig);\\n        _endGame(game, result, winner);\\n    }\\n\\n    function validateMoves(\\n        uint256 gameId,\\n        Move[] calldata moves,\\n        bytes calldata mySig,\\n        bytes calldata opponentSig\\n    ) public view returns (State memory state, uint8 result, address winner) {\\n        (address me, address opponent) = _validateMsgSender(getGame[gameId]);\\n        _verifyMoves(gameId, moves, me, mySig);\\n        _verifyMoves(gameId, moves, opponent, opponentSig);\\n        state = initialState(gameId);\\n        for (uint256 i = 0; i < moves.length; i++) {\\n            doMove(state, moves[i]);\\n        }\\n        (result, winner) = checkWinners(state, moves.length, me, opponent);\\n    }\\n\\n    function encodeMoves(uint256 gameId, Move[] calldata moves) public view returns (bytes32) {\\n        return keccak256(abi.encode(address(this), gameId, moves));\\n    }\\n\\n    function _verifyMoves(uint256 gameId, Move[] calldata moves, address signer, bytes calldata signature) private view {\\n        // the last player must sign all moves; the second last player must sign `moves.length - 1` moves.\\n        uint256 offset = moves.length > 0 && moves[moves.length - 1].player != signer ? 1 : 0;\\n        _verify(encodeMoves(gameId, moves[0:moves.length - offset]), signer, signature);\\n    }\\n\\n    function checkWinners(\\n        State memory state,\\n        uint256 movesLength,\\n        address me,\\n        address opponent\\n    ) public pure returns (uint8 result, address winner) {\\n        (result, winner) = (IN_PROGRESS, address(0));\\n        bool iWon = checkWinner(state.board, me);\\n        bool opponentWon = checkWinner(state.board, opponent);\\n        if (iWon) {\\n            require(!opponentWon, \\\"two winners\\\");\\n            return (WON, me);\\n        }\\n        if (opponentWon) {\\n            return (WON, opponent);\\n        }\\n        if (movesLength == SIZE * SIZE) {\\n            return (DRAW, address(0));\\n        }\\n        return (IN_PROGRESS, address(0));\\n    }\\n\\n    function _endGame(Game storage game, uint8 result, address winner) private {\\n        require(result == DRAW || result == WON, \\\"!end\\\");\\n        if (result == DRAW) {\\n            require(winner == address(0), \\\"!address(0)\\\");\\n        }\\n        game.result = result;\\n        game.winner = winner;\\n        getGameId[game.player0] = 0;\\n        getGameId[game.player1] = 0;\\n    }\\n\\n    function _validateMsgSender(Game storage game) private view returns (address me, address opponent) {\\n        (address player0, address player1) = (game.player0, game.player1);\\n        if (player0 == msg.sender) {\\n            (me, opponent) = (player0, player1);\\n        } else {\\n            require(player1 == msg.sender, \\\"!player\\\");\\n            (me, opponent) = (player1, player0);\\n        }\\n    }\\n\\n    function _recover(bytes32 hash, bytes calldata signature) private pure returns (address) {\\n        return ECDSA.recover(ECDSA.toEthSignedMessageHash(hash), signature);\\n    }\\n\\n    function _verify(bytes32 hash, address signer, bytes calldata signature) private pure {\\n        if (_recover(hash, signature) != signer) {\\n            revert BadSignature(signer);\\n        }\\n    }\\n\\n    // GAME LOGIC\\n    function initialState(uint256 gameId) public view returns (State memory) {\\n        Game storage game = getGame[gameId];\\n        address[SIZE][SIZE] memory board;\\n        return State({\\n            lastPlayer: game.player1, // player0 should start\\n            board: board\\n        });\\n    }\\n\\n    function doMove(State memory state, Move calldata move) public pure returns (State memory) {\\n        require(state.board[move.i][move.j] == address(0), \\\"!empty\\\");\\n        require(move.player != state.lastPlayer, \\\"!turn\\\");\\n        state.board[move.i][move.j] = move.player;\\n        state.lastPlayer = move.player;\\n        return state;\\n    }\\n\\n    function checkWinner(address[SIZE][SIZE] memory board, address winner) public pure returns (bool) {\\n        (uint256 rows, uint256 cols) = (board.length, board[0].length);\\n        require(rows == cols, \\\"rows != cols\\\");\\n\\n        // Check verticals\\n        for (uint256 i = 0; i < rows; i++) {\\n            uint256 sum = 0;\\n            for (uint256 j = 0; j < cols; j++) {\\n                if (board[i][j] == winner) {\\n                    sum += 1;\\n                }\\n            }\\n            if (sum == cols) {\\n                return true;\\n            }\\n        }\\n\\n        // Check horizontals\\n        for (uint256 j = 0; j < cols; j++) {\\n            uint256 sum = 0;\\n            for (uint256 i = 0; i < rows; i++) {\\n                if (board[i][j] == winner) {\\n                    sum += 1;\\n                }\\n            }\\n            if (sum == rows) {\\n                return true;\\n            }\\n        }\\n\\n        // Check diagonals\\n        {\\n            uint256 sum = 0;\\n            for (uint256 i = 0; i < rows; i++) {\\n                if (board[i][i] == winner) {\\n                    sum += 1;\\n                }\\n            }\\n            if (sum == rows) {\\n                return true;\\n            }\\n        }\\n        {\\n            uint256 sum = 0;\\n            for (uint256 i = 0; i < rows; i++) {\\n                if (board[rows - i - 1][i] == winner) {\\n                    sum += 1;\\n                }\\n            }\\n            if (sum == rows) {\\n                return true;\\n            }\\n        }\\n\\n        return false;\\n    }\\n}\\n\",\"keccak256\":\"0x0c750d913d18d6e8169294c0c67e0f43daa891f09d5c000f71e1f06e09482fca\",\"license\":\"Unlicense\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50611b27806100206000396000f3fe608060405234801561001057600080fd5b50600436106101215760003560e01c80638e19e59e116100ad578063abfd6da511610071578063abfd6da5146102d9578063b39c6952146102f9578063bdffd2821461031b578063dc1140ad14610323578063fd1563451461034657600080fd5b80638e19e59e146102055780639217a926146102255780639b8a8ab014610238578063a2f77bcc1461024b578063a4fa2f27146102c657600080fd5b8063600f150c116100f4578063600f150c146101a8578063619d36ef146101c257806361de6e1c146101ca57806379c29403146101dd5780637ecebe00146101e557600080fd5b8063025a506a14610126578063233807481461014c5780632d6c2dc7146101615780634822144e14610174575b600080fd5b610139610134366004611714565b610359565b6040519081526020015b60405180910390f35b61015f61015a36600461185d565b6103a6565b005b61013961016f366004611586565b610451565b6101876101823660046116ab565b61049e565b6040805160ff90931683526001600160a01b03909116602083015201610143565b6101b0600081565b60405160ff9091168152602001610143565b6101b0600281565b6101396101d8366004611839565b610563565b6101b0600181565b6101396101f3366004611586565b60026020526000908152604090205481565b61021861021336600461166a565b610596565b60405161014391906119bc565b61015f610233366004611799565b61071d565b61013961024636600461174f565b6107a2565b6102936102593660046116fc565b6000602081905290815260409020805460018201546002909201546001600160a01b0391821692821691811690600160a01b900460ff1684565b604080516001600160a01b0395861681529385166020850152919093169082015260ff9091166060820152608001610143565b61015f6102d43660046115a7565b6107bb565b6101396102e7366004611586565b60016020526000908152604090205481565b61030c610307366004611799565b6109d0565b604051610143939291906119cb565b6101b0600381565b610336610331366004611635565b610a92565b6040519015158152602001610143565b6102186103543660046116fc565b610d85565b604080513060208201529081018490526001600160a01b0380841660608301528216608082015260009060a0015b6040516020818303038152906040528051906020012090509392505050565b60008781526020819052604090206002810154600160a01b900460ff16156104025760405162461bcd60e51b815260206004820152600a60248201526919d85b5948195b99195960b21b60448201526064015b60405180910390fd5b60008061040e83610dc9565b91509150600061041f8b8b8b610563565b905061042d81848a8a610e46565b61043981838888610e46565b610444848b8b610e93565b5050505050505050505050565b6001600160a01b0316600081815260026020908152604091829020548251308184015280840194909452606080850191909152825180850390910181526080909301909152815191012090565b6020840151600090819081906104b49086610a92565b905060006104c6886020015186610a92565b9050811561051857801561050a5760405162461bcd60e51b815260206004820152600b60248201526a74776f2077696e6e65727360a81b60448201526064016103f9565b60018693509350505061055a565b801561052c5760018593509350505061055a565b610537600380611a6a565b60ff16871415610550576002600093509350505061055a565b6000809350935050505b94509492505050565b6040805130602082015290810184905260ff831660608201526001600160a01b038216608082015260009060a001610387565b61059e61134f565b602080840151600091840135600381106105c857634e487b7160e01b600052603260045260246000fd5b60200201518360400135600381106105f057634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b0316146106345760405162461bcd60e51b815260206004820152600660248201526521656d70747960d01b60448201526064016103f9565b82516001600160a01b031661064c6020840184611586565b6001600160a01b0316141561068b5760405162461bcd60e51b815260206004820152600560248201526410ba3ab93760d91b60448201526064016103f9565b6106986020830183611586565b83602001518360200135600381106106c057634e487b7160e01b600052603260045260246000fd5b60200201518360400135600381106106e857634e487b7160e01b600052603260045260246000fd5b6001600160a01b039092166020928302919091015261070990830183611586565b6001600160a01b0316835250815b92915050565b60008781526020819052604090206002810154600160a01b900460ff16156107745760405162461bcd60e51b815260206004820152600a60248201526919d85b5948195b99195960b21b60448201526064016103f9565b6000806107868a8a8a8a8a8a8a6109d0565b9250925050610796838383610e93565b50505050505050505050565b6000308484846040516020016103879493929190611944565b846001600160a01b0316866001600160a01b0316141561080c5760405162461bcd60e51b815260206004820152600c60248201526b73616d65206164647265737360a01b60448201526064016103f9565b6001600160a01b038616600090815260016020526040902054156108645760405162461bcd60e51b815260206004820152600f60248201526e616c726561647920706c6179696e6760881b60448201526064016103f9565b6001600160a01b038516600090815260016020526040902054156108bc5760405162461bcd60e51b815260206004820152600f60248201526e616c726561647920706c6179696e6760881b60448201526064016103f9565b60006108c787610451565b90506108e06108d882896000610359565b888787610e46565b6108f66108ee828989610359565b878585610e46565b6001600160a01b038716600090815260026020526040812080549161091a83611aaa565b90915550506001600160a01b039687166000818152600160208181526040808420869055998b168084528a84208690558a51608081018c52948552848201908152848b0184815260608601858152968552918490529990922092518354908b166001600160a01b031991821617845598519083018054918b169190991617909755955160029096018054915160ff16600160a01b026001600160a81b031990921696909716959095179490941790945550505050565b6109d861134f565b6000806000806109f86000808e8152602001908152602001600020610dc9565b91509150610a0a8c8c8c858d8d610f90565b610a188c8c8c848b8b610f90565b610a218c610d85565b945060005b8a811015610a7057610a5d868d8d84818110610a5257634e487b7160e01b600052603260045260246000fd5b905060600201610596565b5080610a6881611aaa565b915050610a26565b50610a7d858b848461049e565b959d909c50949a509398505050505050505050565b600060038060005b82811015610b59576000805b83811015610b3057866001600160a01b0316888460038110610ad857634e487b7160e01b600052603260045260246000fd5b60200201518260038110610afc57634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b03161415610b1e57610b1b600183611a52565b91505b80610b2881611aaa565b915050610aa6565b5082811415610b46576001945050505050610717565b5080610b5181611aaa565b915050610a9a565b5060005b81811015610c1c576000805b84811015610bf357866001600160a01b0316888260038110610b9b57634e487b7160e01b600052603260045260246000fd5b60200201518460038110610bbf57634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b03161415610be157610bde600183611a52565b91505b80610beb81611aaa565b915050610b69565b5083811415610c09576001945050505050610717565b5080610c1481611aaa565b915050610b5d565b506000805b83811015610cab57856001600160a01b0316878260038110610c5357634e487b7160e01b600052603260045260246000fd5b60200201518260038110610c7757634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b03161415610c9957610c96600183611a52565b91505b80610ca381611aaa565b915050610c21565b5082811415610cc05760019350505050610717565b506000805b83811015610d64576001600160a01b038616876001610ce48488611a93565b610cee9190611a93565b60038110610d0c57634e487b7160e01b600052603260045260246000fd5b60200201518260038110610d3057634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b03161415610d5257610d4f600183611a52565b91505b80610d5c81611aaa565b915050610cc5565b5082811415610d795760019350505050610717565b50600095945050505050565b610d8d61134f565b6000828152602081905260409020610da3611377565b604080518082019091526001909201546001600160a01b03168252602082015292915050565b8054600182015460009182916001600160a01b03918216911633821415610df65790925090508181610e3f565b6001600160a01b0381163314610e385760405162461bcd60e51b815260206004820152600760248201526610b83630bcb2b960c91b60448201526064016103f9565b9250905080825b5050915091565b826001600160a01b0316610e5b858484611038565b6001600160a01b031614610e8d57604051639a7d38d960e01b81526001600160a01b03841660048201526024016103f9565b50505050565b60ff821660021480610ea8575060ff82166001145b610edd5760405162461bcd60e51b81526004016103f99060208082526004908201526308595b9960e21b604082015260600190565b60ff821660021415610f2e576001600160a01b03811615610f2e5760405162461bcd60e51b815260206004820152600b60248201526a216164647265737328302960a81b60448201526064016103f9565b6002830180546001600160a81b031916600160a01b60ff94909416939093026001600160a01b031916929092176001600160a01b0391821617909155815481166000908152600160208190526040808320839055930154909116815290812055565b60008415801590610ff257506001600160a01b0384168686610fb3600182611a93565b818110610fd057634e487b7160e01b600052603260045260246000fd5b610fe69260206060909202019081019150611586565b6001600160a01b031614155b610ffd576000611000565b60015b60ff16905061102f611027888860008961101a8782611a93565b9261024693929190611a27565b858585610e46565b50505050505050565b60006110d0611094856040517f19457468657265756d205369676e6564204d6573736167653a0a3332000000006020820152603c8101829052600090605c01604051602081830303815290604052805190602001209050919050565b84848080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152506110d892505050565b949350505050565b600081516041141561110c5760208201516040830151606084015160001a6111028682858561117c565b9350505050610717565b815160401415611134576020820151604083015161112b858383611325565b92505050610717565b60405162461bcd60e51b815260206004820152601f60248201527f45434453413a20696e76616c6964207369676e6174757265206c656e6774680060448201526064016103f9565b60007f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a08211156111f95760405162461bcd60e51b815260206004820152602260248201527f45434453413a20696e76616c6964207369676e6174757265202773272076616c604482015261756560f01b60648201526084016103f9565b8360ff16601b148061120e57508360ff16601c145b6112655760405162461bcd60e51b815260206004820152602260248201527f45434453413a20696e76616c6964207369676e6174757265202776272076616c604482015261756560f01b60648201526084016103f9565b6040805160008082526020820180845288905260ff871692820192909252606081018590526080810184905260019060a0016020604051602081039080840390855afa1580156112b9573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b03811661131c5760405162461bcd60e51b815260206004820152601860248201527f45434453413a20696e76616c6964207369676e6174757265000000000000000060448201526064016103f9565b95945050505050565b60006001600160ff1b03821660ff83901c601b016113458682878561117c565b9695505050505050565b604051806040016040528060006001600160a01b03168152602001611372611377565b905290565b60405180606001604052806003905b61138e6113a4565b8152602001906001900390816113865790505090565b60405180606001604052806003906020820280368337509192915050565b80356001600160a01b03811681146113d957600080fd5b919050565b6000601f83818401126113ef578182fd5b6113f76119fe565b80848661012087011115611409578485fd5b845b600380821061141a5750611480565b8886840112611427578687fd5b61142f6119fe565b8084606086018c811115611441578a8bfd5b8a5b8581101561146957611454836113c2565b85526020948501949290920191600101611443565b50918852506020909601959350505060010161140b565b50909695505050505050565b60008083601f84011261149d578182fd5b50813567ffffffffffffffff8111156114b4578182fd5b6020830191508360206060830285010111156114cf57600080fd5b9250929050565b60008083601f8401126114e7578182fd5b50813567ffffffffffffffff8111156114fe578182fd5b6020830191508360208285010111156114cf57600080fd5b60006101408284031215611528578081fd5b6040516040810181811067ffffffffffffffff8211171561154b5761154b611adb565b60405290508061155a836113c2565b815261156984602085016113de565b60208201525092915050565b803560ff811681146113d957600080fd5b600060208284031215611597578081fd5b6115a0826113c2565b9392505050565b600080600080600080608087890312156115bf578182fd5b6115c8876113c2565b95506115d6602088016113c2565b9450604087013567ffffffffffffffff808211156115f2578384fd5b6115fe8a838b016114d6565b90965094506060890135915080821115611616578384fd5b5061162389828a016114d6565b979a9699509497509295939492505050565b6000806101408385031215611648578182fd5b61165284846113de565b915061166161012084016113c2565b90509250929050565b6000808284036101a081121561167e578283fd5b6116888585611516565b9250606061013f198201121561169c578182fd5b50610140830190509250929050565b6000806000806101a085870312156116c1578384fd5b6116cb8686611516565b935061014085013592506116e261016086016113c2565b91506116f161018086016113c2565b905092959194509250565b60006020828403121561170d578081fd5b5035919050565b600080600060608486031215611728578283fd5b83359250611738602085016113c2565b9150611746604085016113c2565b90509250925092565b600080600060408486031215611763578283fd5b83359250602084013567ffffffffffffffff811115611780578283fd5b61178c8682870161148c565b9497909650939450505050565b60008060008060008060006080888a0312156117b3578081fd5b87359650602088013567ffffffffffffffff808211156117d1578283fd5b6117dd8b838c0161148c565b909850965060408a01359150808211156117f5578283fd5b6118018b838c016114d6565b909650945060608a0135915080821115611819578283fd5b506118268a828b016114d6565b989b979a50959850939692959293505050565b60008060006060848603121561184d578081fd5b8335925061173860208501611575565b600080600080600080600060a0888a031215611877578081fd5b8735965061188760208901611575565b9550611895604089016113c2565b9450606088013567ffffffffffffffff808211156118b1578283fd5b6118bd8b838c016114d6565b909650945060808a0135915080821115611819578283fd5b80516001600160a01b0390811683526020808301518185016000805b6003808210611900575061193a565b845184845b838110156119235782518a1682529188019190880190600101611905565b5050509385019350606092909201916001016118f1565b5050505050505050565b6001600160a01b038581168252602080830186905260606040808501829052848201869052600093919287929160808701865b898110156119ac5784611989876113c2565b168252858401358483015282860135838301529486019490860190600101611977565b509b9a5050505050505050505050565b610140810161071782846118d5565b61018081016119da82866118d5565b60ff939093166101408201526001600160a01b039190911661016090910152919050565b6040516060810167ffffffffffffffff81118282101715611a2157611a21611adb565b60405290565b60008085851115611a36578182fd5b83861115611a42578182fd5b5050606083020193919092039150565b60008219821115611a6557611a65611ac5565b500190565b600060ff821660ff84168160ff0481118215151615611a8b57611a8b611ac5565b029392505050565b600082821015611aa557611aa5611ac5565b500390565b6000600019821415611abe57611abe611ac5565b5060010190565b634e487b7160e01b600052601160045260246000fd5b634e487b7160e01b600052604160045260246000fdfea264697066735822122073cc5f13e69f646dd5591183d3bb1ffca1b405c0d7965de95eae4c5572e1a8fa64736f6c63430008040033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106101215760003560e01c80638e19e59e116100ad578063abfd6da511610071578063abfd6da5146102d9578063b39c6952146102f9578063bdffd2821461031b578063dc1140ad14610323578063fd1563451461034657600080fd5b80638e19e59e146102055780639217a926146102255780639b8a8ab014610238578063a2f77bcc1461024b578063a4fa2f27146102c657600080fd5b8063600f150c116100f4578063600f150c146101a8578063619d36ef146101c257806361de6e1c146101ca57806379c29403146101dd5780637ecebe00146101e557600080fd5b8063025a506a14610126578063233807481461014c5780632d6c2dc7146101615780634822144e14610174575b600080fd5b610139610134366004611714565b610359565b6040519081526020015b60405180910390f35b61015f61015a36600461185d565b6103a6565b005b61013961016f366004611586565b610451565b6101876101823660046116ab565b61049e565b6040805160ff90931683526001600160a01b03909116602083015201610143565b6101b0600081565b60405160ff9091168152602001610143565b6101b0600281565b6101396101d8366004611839565b610563565b6101b0600181565b6101396101f3366004611586565b60026020526000908152604090205481565b61021861021336600461166a565b610596565b60405161014391906119bc565b61015f610233366004611799565b61071d565b61013961024636600461174f565b6107a2565b6102936102593660046116fc565b6000602081905290815260409020805460018201546002909201546001600160a01b0391821692821691811690600160a01b900460ff1684565b604080516001600160a01b0395861681529385166020850152919093169082015260ff9091166060820152608001610143565b61015f6102d43660046115a7565b6107bb565b6101396102e7366004611586565b60016020526000908152604090205481565b61030c610307366004611799565b6109d0565b604051610143939291906119cb565b6101b0600381565b610336610331366004611635565b610a92565b6040519015158152602001610143565b6102186103543660046116fc565b610d85565b604080513060208201529081018490526001600160a01b0380841660608301528216608082015260009060a0015b6040516020818303038152906040528051906020012090509392505050565b60008781526020819052604090206002810154600160a01b900460ff16156104025760405162461bcd60e51b815260206004820152600a60248201526919d85b5948195b99195960b21b60448201526064015b60405180910390fd5b60008061040e83610dc9565b91509150600061041f8b8b8b610563565b905061042d81848a8a610e46565b61043981838888610e46565b610444848b8b610e93565b5050505050505050505050565b6001600160a01b0316600081815260026020908152604091829020548251308184015280840194909452606080850191909152825180850390910181526080909301909152815191012090565b6020840151600090819081906104b49086610a92565b905060006104c6886020015186610a92565b9050811561051857801561050a5760405162461bcd60e51b815260206004820152600b60248201526a74776f2077696e6e65727360a81b60448201526064016103f9565b60018693509350505061055a565b801561052c5760018593509350505061055a565b610537600380611a6a565b60ff16871415610550576002600093509350505061055a565b6000809350935050505b94509492505050565b6040805130602082015290810184905260ff831660608201526001600160a01b038216608082015260009060a001610387565b61059e61134f565b602080840151600091840135600381106105c857634e487b7160e01b600052603260045260246000fd5b60200201518360400135600381106105f057634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b0316146106345760405162461bcd60e51b815260206004820152600660248201526521656d70747960d01b60448201526064016103f9565b82516001600160a01b031661064c6020840184611586565b6001600160a01b0316141561068b5760405162461bcd60e51b815260206004820152600560248201526410ba3ab93760d91b60448201526064016103f9565b6106986020830183611586565b83602001518360200135600381106106c057634e487b7160e01b600052603260045260246000fd5b60200201518360400135600381106106e857634e487b7160e01b600052603260045260246000fd5b6001600160a01b039092166020928302919091015261070990830183611586565b6001600160a01b0316835250815b92915050565b60008781526020819052604090206002810154600160a01b900460ff16156107745760405162461bcd60e51b815260206004820152600a60248201526919d85b5948195b99195960b21b60448201526064016103f9565b6000806107868a8a8a8a8a8a8a6109d0565b9250925050610796838383610e93565b50505050505050505050565b6000308484846040516020016103879493929190611944565b846001600160a01b0316866001600160a01b0316141561080c5760405162461bcd60e51b815260206004820152600c60248201526b73616d65206164647265737360a01b60448201526064016103f9565b6001600160a01b038616600090815260016020526040902054156108645760405162461bcd60e51b815260206004820152600f60248201526e616c726561647920706c6179696e6760881b60448201526064016103f9565b6001600160a01b038516600090815260016020526040902054156108bc5760405162461bcd60e51b815260206004820152600f60248201526e616c726561647920706c6179696e6760881b60448201526064016103f9565b60006108c787610451565b90506108e06108d882896000610359565b888787610e46565b6108f66108ee828989610359565b878585610e46565b6001600160a01b038716600090815260026020526040812080549161091a83611aaa565b90915550506001600160a01b039687166000818152600160208181526040808420869055998b168084528a84208690558a51608081018c52948552848201908152848b0184815260608601858152968552918490529990922092518354908b166001600160a01b031991821617845598519083018054918b169190991617909755955160029096018054915160ff16600160a01b026001600160a81b031990921696909716959095179490941790945550505050565b6109d861134f565b6000806000806109f86000808e8152602001908152602001600020610dc9565b91509150610a0a8c8c8c858d8d610f90565b610a188c8c8c848b8b610f90565b610a218c610d85565b945060005b8a811015610a7057610a5d868d8d84818110610a5257634e487b7160e01b600052603260045260246000fd5b905060600201610596565b5080610a6881611aaa565b915050610a26565b50610a7d858b848461049e565b959d909c50949a509398505050505050505050565b600060038060005b82811015610b59576000805b83811015610b3057866001600160a01b0316888460038110610ad857634e487b7160e01b600052603260045260246000fd5b60200201518260038110610afc57634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b03161415610b1e57610b1b600183611a52565b91505b80610b2881611aaa565b915050610aa6565b5082811415610b46576001945050505050610717565b5080610b5181611aaa565b915050610a9a565b5060005b81811015610c1c576000805b84811015610bf357866001600160a01b0316888260038110610b9b57634e487b7160e01b600052603260045260246000fd5b60200201518460038110610bbf57634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b03161415610be157610bde600183611a52565b91505b80610beb81611aaa565b915050610b69565b5083811415610c09576001945050505050610717565b5080610c1481611aaa565b915050610b5d565b506000805b83811015610cab57856001600160a01b0316878260038110610c5357634e487b7160e01b600052603260045260246000fd5b60200201518260038110610c7757634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b03161415610c9957610c96600183611a52565b91505b80610ca381611aaa565b915050610c21565b5082811415610cc05760019350505050610717565b506000805b83811015610d64576001600160a01b038616876001610ce48488611a93565b610cee9190611a93565b60038110610d0c57634e487b7160e01b600052603260045260246000fd5b60200201518260038110610d3057634e487b7160e01b600052603260045260246000fd5b60200201516001600160a01b03161415610d5257610d4f600183611a52565b91505b80610d5c81611aaa565b915050610cc5565b5082811415610d795760019350505050610717565b50600095945050505050565b610d8d61134f565b6000828152602081905260409020610da3611377565b604080518082019091526001909201546001600160a01b03168252602082015292915050565b8054600182015460009182916001600160a01b03918216911633821415610df65790925090508181610e3f565b6001600160a01b0381163314610e385760405162461bcd60e51b815260206004820152600760248201526610b83630bcb2b960c91b60448201526064016103f9565b9250905080825b5050915091565b826001600160a01b0316610e5b858484611038565b6001600160a01b031614610e8d57604051639a7d38d960e01b81526001600160a01b03841660048201526024016103f9565b50505050565b60ff821660021480610ea8575060ff82166001145b610edd5760405162461bcd60e51b81526004016103f99060208082526004908201526308595b9960e21b604082015260600190565b60ff821660021415610f2e576001600160a01b03811615610f2e5760405162461bcd60e51b815260206004820152600b60248201526a216164647265737328302960a81b60448201526064016103f9565b6002830180546001600160a81b031916600160a01b60ff94909416939093026001600160a01b031916929092176001600160a01b0391821617909155815481166000908152600160208190526040808320839055930154909116815290812055565b60008415801590610ff257506001600160a01b0384168686610fb3600182611a93565b818110610fd057634e487b7160e01b600052603260045260246000fd5b610fe69260206060909202019081019150611586565b6001600160a01b031614155b610ffd576000611000565b60015b60ff16905061102f611027888860008961101a8782611a93565b9261024693929190611a27565b858585610e46565b50505050505050565b60006110d0611094856040517f19457468657265756d205369676e6564204d6573736167653a0a3332000000006020820152603c8101829052600090605c01604051602081830303815290604052805190602001209050919050565b84848080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152506110d892505050565b949350505050565b600081516041141561110c5760208201516040830151606084015160001a6111028682858561117c565b9350505050610717565b815160401415611134576020820151604083015161112b858383611325565b92505050610717565b60405162461bcd60e51b815260206004820152601f60248201527f45434453413a20696e76616c6964207369676e6174757265206c656e6774680060448201526064016103f9565b60007f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a08211156111f95760405162461bcd60e51b815260206004820152602260248201527f45434453413a20696e76616c6964207369676e6174757265202773272076616c604482015261756560f01b60648201526084016103f9565b8360ff16601b148061120e57508360ff16601c145b6112655760405162461bcd60e51b815260206004820152602260248201527f45434453413a20696e76616c6964207369676e6174757265202776272076616c604482015261756560f01b60648201526084016103f9565b6040805160008082526020820180845288905260ff871692820192909252606081018590526080810184905260019060a0016020604051602081039080840390855afa1580156112b9573d6000803e3d6000fd5b5050604051601f1901519150506001600160a01b03811661131c5760405162461bcd60e51b815260206004820152601860248201527f45434453413a20696e76616c6964207369676e6174757265000000000000000060448201526064016103f9565b95945050505050565b60006001600160ff1b03821660ff83901c601b016113458682878561117c565b9695505050505050565b604051806040016040528060006001600160a01b03168152602001611372611377565b905290565b60405180606001604052806003905b61138e6113a4565b8152602001906001900390816113865790505090565b60405180606001604052806003906020820280368337509192915050565b80356001600160a01b03811681146113d957600080fd5b919050565b6000601f83818401126113ef578182fd5b6113f76119fe565b80848661012087011115611409578485fd5b845b600380821061141a5750611480565b8886840112611427578687fd5b61142f6119fe565b8084606086018c811115611441578a8bfd5b8a5b8581101561146957611454836113c2565b85526020948501949290920191600101611443565b50918852506020909601959350505060010161140b565b50909695505050505050565b60008083601f84011261149d578182fd5b50813567ffffffffffffffff8111156114b4578182fd5b6020830191508360206060830285010111156114cf57600080fd5b9250929050565b60008083601f8401126114e7578182fd5b50813567ffffffffffffffff8111156114fe578182fd5b6020830191508360208285010111156114cf57600080fd5b60006101408284031215611528578081fd5b6040516040810181811067ffffffffffffffff8211171561154b5761154b611adb565b60405290508061155a836113c2565b815261156984602085016113de565b60208201525092915050565b803560ff811681146113d957600080fd5b600060208284031215611597578081fd5b6115a0826113c2565b9392505050565b600080600080600080608087890312156115bf578182fd5b6115c8876113c2565b95506115d6602088016113c2565b9450604087013567ffffffffffffffff808211156115f2578384fd5b6115fe8a838b016114d6565b90965094506060890135915080821115611616578384fd5b5061162389828a016114d6565b979a9699509497509295939492505050565b6000806101408385031215611648578182fd5b61165284846113de565b915061166161012084016113c2565b90509250929050565b6000808284036101a081121561167e578283fd5b6116888585611516565b9250606061013f198201121561169c578182fd5b50610140830190509250929050565b6000806000806101a085870312156116c1578384fd5b6116cb8686611516565b935061014085013592506116e261016086016113c2565b91506116f161018086016113c2565b905092959194509250565b60006020828403121561170d578081fd5b5035919050565b600080600060608486031215611728578283fd5b83359250611738602085016113c2565b9150611746604085016113c2565b90509250925092565b600080600060408486031215611763578283fd5b83359250602084013567ffffffffffffffff811115611780578283fd5b61178c8682870161148c565b9497909650939450505050565b60008060008060008060006080888a0312156117b3578081fd5b87359650602088013567ffffffffffffffff808211156117d1578283fd5b6117dd8b838c0161148c565b909850965060408a01359150808211156117f5578283fd5b6118018b838c016114d6565b909650945060608a0135915080821115611819578283fd5b506118268a828b016114d6565b989b979a50959850939692959293505050565b60008060006060848603121561184d578081fd5b8335925061173860208501611575565b600080600080600080600060a0888a031215611877578081fd5b8735965061188760208901611575565b9550611895604089016113c2565b9450606088013567ffffffffffffffff808211156118b1578283fd5b6118bd8b838c016114d6565b909650945060808a0135915080821115611819578283fd5b80516001600160a01b0390811683526020808301518185016000805b6003808210611900575061193a565b845184845b838110156119235782518a1682529188019190880190600101611905565b5050509385019350606092909201916001016118f1565b5050505050505050565b6001600160a01b038581168252602080830186905260606040808501829052848201869052600093919287929160808701865b898110156119ac5784611989876113c2565b168252858401358483015282860135838301529486019490860190600101611977565b509b9a5050505050505050505050565b610140810161071782846118d5565b61018081016119da82866118d5565b60ff939093166101408201526001600160a01b039190911661016090910152919050565b6040516060810167ffffffffffffffff81118282101715611a2157611a21611adb565b60405290565b60008085851115611a36578182fd5b83861115611a42578182fd5b5050606083020193919092039150565b60008219821115611a6557611a65611ac5565b500190565b600060ff821660ff84168160ff0481118215151615611a8b57611a8b611ac5565b029392505050565b600082821015611aa557611aa5611ac5565b500390565b6000600019821415611abe57611abe611ac5565b5060010190565b634e487b7160e01b600052601160045260246000fd5b634e487b7160e01b600052604160045260246000fdfea264697066735822122073cc5f13e69f646dd5591183d3bb1ffca1b405c0d7965de95eae4c5572e1a8fa64736f6c63430008040033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 211,
+        "contract": "contracts/TicTacToe.sol:TicTacToe",
+        "label": "getGame",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_uint256,t_struct(Game)195_storage)"
+      },
+      {
+        "astId": 215,
+        "contract": "contracts/TicTacToe.sol:TicTacToe",
+        "label": "getGameId",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_uint256)"
+      },
+      {
+        "astId": 219,
+        "contract": "contracts/TicTacToe.sol:TicTacToe",
+        "label": "nonces",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_uint256)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_mapping(t_address,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_uint256,t_struct(Game)195_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct Game)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Game)195_storage"
+      },
+      "t_struct(Game)195_storage": {
+        "encoding": "inplace",
+        "label": "struct Game",
+        "members": [
+          {
+            "astId": 188,
+            "contract": "contracts/TicTacToe.sol:TicTacToe",
+            "label": "player0",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 190,
+            "contract": "contracts/TicTacToe.sol:TicTacToe",
+            "label": "player1",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          },
+          {
+            "astId": 192,
+            "contract": "contracts/TicTacToe.sol:TicTacToe",
+            "label": "winner",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address"
+          },
+          {
+            "astId": 194,
+            "contract": "contracts/TicTacToe.sol:TicTacToe",
+            "label": "result",
+            "offset": 20,
+            "slot": "2",
+            "type": "t_uint8"
+          }
+        ],
+        "numberOfBytes": "96"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  }
+}
