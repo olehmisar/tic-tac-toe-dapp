@@ -1,9 +1,16 @@
 import express from 'express';
+import path from 'path';
 import { Server } from 'socket.io';
 import { ClientWsInterface, GamePool, ServerWsInterface } from './types';
 
 const app = express();
-const port = 8000;
+const buildPath = path.join(__dirname, '../client/dist');
+app.use(express.static(buildPath));
+app.use((req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
+
+const port = process.env.PORT || 8000;
 const server = app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });

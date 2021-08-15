@@ -1,4 +1,11 @@
 {
+  "scripts": {
+    "start": "cd server && yarn ts-node main.ts",
+    "heroku-postbuild": "yarn build:contracts && yarn build:server && yarn build:client",
+    "build:contracts": "cp env.example.ts env.ts && yarn hardhat compile && yarn hardhat export --export-all client/src/deployments.json",
+    "build:client": "cd client && yarn && yarn build",
+    "build:server": "cd server && yarn"
+  },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
