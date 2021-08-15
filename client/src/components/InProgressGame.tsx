@@ -24,15 +24,21 @@ export const InProgressGame: FC<Props> = ({ noGame }) => {
     return { gameId: gameId.toString(), ...game };
   });
 
+  let msg: ReactNode;
   if (query.isLoading) {
-    return <Spin>Loading your game...</Spin>;
+    msg = <Spin>Loading your game...</Spin>;
   }
   if (query.isError) {
-    <Alert type="error" message="Failed to load" />;
+    msg = <Alert closable type="error" message="Failed to load" />;
   }
   const game = query.data;
   if (!game) {
-    return <>{noGame}</>;
+    return (
+      <Space size="large" direction="vertical">
+        {msg}
+        {noGame}
+      </Space>
+    );
   }
   return (
     <Card title={'You are in the game!'}>
