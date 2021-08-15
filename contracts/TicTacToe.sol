@@ -191,31 +191,28 @@ contract TicTacToe {
     }
 
     function checkWinner(address[SIZE][SIZE] memory board, address winner) public pure returns (bool) {
-        (uint256 rows, uint256 cols) = (board.length, board[0].length);
-        require(rows == cols, "rows != cols");
-
         // Check verticals
-        for (uint256 i = 0; i < rows; i++) {
+        for (uint256 i = 0; i < SIZE; i++) {
             uint256 sum = 0;
-            for (uint256 j = 0; j < cols; j++) {
+            for (uint256 j = 0; j < SIZE; j++) {
                 if (board[i][j] == winner) {
                     sum += 1;
                 }
             }
-            if (sum == cols) {
+            if (sum == SIZE) {
                 return true;
             }
         }
 
         // Check horizontals
-        for (uint256 j = 0; j < cols; j++) {
+        for (uint256 j = 0; j < SIZE; j++) {
             uint256 sum = 0;
-            for (uint256 i = 0; i < rows; i++) {
+            for (uint256 i = 0; i < SIZE; i++) {
                 if (board[i][j] == winner) {
                     sum += 1;
                 }
             }
-            if (sum == rows) {
+            if (sum == SIZE) {
                 return true;
             }
         }
@@ -223,23 +220,23 @@ contract TicTacToe {
         // Check diagonals
         {
             uint256 sum = 0;
-            for (uint256 i = 0; i < rows; i++) {
+            for (uint256 i = 0; i < SIZE; i++) {
                 if (board[i][i] == winner) {
                     sum += 1;
                 }
             }
-            if (sum == rows) {
+            if (sum == SIZE) {
                 return true;
             }
         }
         {
             uint256 sum = 0;
-            for (uint256 i = 0; i < rows; i++) {
-                if (board[rows - i - 1][i] == winner) {
+            for (uint256 i = 0; i < SIZE; i++) {
+                if (board[SIZE - i - 1][i] == winner) {
                     sum += 1;
                 }
             }
-            if (sum == rows) {
+            if (sum == SIZE) {
                 return true;
             }
         }
