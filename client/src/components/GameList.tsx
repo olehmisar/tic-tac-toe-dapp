@@ -27,7 +27,8 @@ export const GameList: FC = () => {
                     const movesSignature = await signer.signMessage(
                       arrayify(await ticTacToe.encodeMoves(game.gameId, [])),
                     );
-                    await ticTacToe.startGame(game.creator, address, signature, signature);
+                    const tx = await ticTacToe.startGame(game.creator, address, signature, signature);
+                    await tx.wait();
                     socket.joinGame({ gameId: game.gameId, joined: address, joinedMovesSignature: movesSignature });
                   } catch (e) {
                     message.error(formatRPCError(e));

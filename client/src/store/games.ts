@@ -19,6 +19,13 @@ export type Move = {
   j: number;
 };
 
+export type Result = typeof Result[keyof typeof Result];
+export const Result = {
+  IN_PROGRESS: 0,
+  WON: 1,
+  DRAW: 2,
+} as const;
+
 export type Game = {
   gameId: string;
   me: string;
@@ -26,10 +33,42 @@ export type Game = {
   opponent: string;
   opponentMovesSignature: string;
   moves: Move[];
+  result: Result;
+  winner: string;
   state: {
     board: string[][];
   };
 };
+
+async function validateMoves(
+  ticTacToe: TicTacToe,
+  gameId: string,
+  moves: Move[],
+  myMovesSignature: string,
+  opponentMovesSignature: string,
+  updateState: (
+    data: {
+      gameId: string;
+      moves: Move[];
+      myMovesSignature: string;
+      opponentMovesSignature: string;
+      result: Result;
+      winner: string;
+    },
+    board: string[][],
+  ) => void,
+) {
+  const { state, result, winner } = await ticTacToe.validateMoves(
+    gameId,
+    moves,
+    myMovesSignature,
+    opponentMovesSignature,
+  );
+  updateState(
+    { gameId, moves, myMovesSignature, opponentMovesSignature, result: result as Result, winner },
+    state.board,
+  );
+}
 
 export const useGame = (gameId: string) => {
   const gamesStore = useGamesStore();
@@ -48,11 +87,7 @@ export const useGame = (gameId: string) => {
       }
       const { ticTacToe } = web3;
       try {
-        const { state } = await ticTacToe.validateMoves(gameId, moves, game.myMovesSignature, signature);
-        gamesStore.updateGame(
-          { gameId, moves, myMovesSignature: game.myMovesSignature, opponentMovesSignature: signature },
-          state.board,
-        );
+        await validateMoves(ticTacToe, gameId, moves, game.myMovesSignature, signature, gamesStore.updateGame);
       } catch (e) {
         message.error(formatRPCError(e));
       }
@@ -72,10 +107,13 @@ export const useGame = (gameId: string) => {
       const moves = [...game.moves, move];
       try {
         const myMovesSignature = await signer.signMessage(arrayify(await ticTacToe.encodeMoves(gameId, moves)));
-        const { state } = await ticTacToe.validateMoves(gameId, moves, myMovesSignature, game.opponentMovesSignature);
-        gamesStore.updateGame(
-          { gameId, moves, myMovesSignature, opponentMovesSignature: game.opponentMovesSignature },
-          state.board,
+        await validateMoves(
+          ticTacToe,
+          gameId,
+          moves,
+          myMovesSignature,
+          game.opponentMovesSignature,
+          gamesStore.updateGame,
         );
         socket.emit('updateGame', { gameId, moves, signature: myMovesSignature });
       } catch (e) {
@@ -108,6 +146,8 @@ const useGamesStore = create(
           const game = {
             ...payload,
             moves: [],
+            result: Result.IN_PROGRESS,
+            winner: AddressZero,
             state: {
               // TODO: fetch board from blockchain
               board: _.times(3, () => _.times(3, _.constant(AddressZero))),
@@ -121,7 +161,16 @@ const useGamesStore = create(
             moves,
             myMovesSignature,
             opponentMovesSignature,
-          }: { gameId: string; moves: Move[]; myMovesSignature: string; opponentMovesSignature: string },
+            result,
+            winner,
+          }: {
+            gameId: string;
+            moves: Move[];
+            myMovesSignature: string;
+            opponentMovesSignature: string;
+            result: Result;
+            winner: string;
+          },
           board: string[][],
         ) {
           const game = get().games[gameId];
@@ -137,6 +186,8 @@ const useGamesStore = create(
                 moves,
                 myMovesSignature,
                 opponentMovesSignature,
+                result,
+                winner,
                 state: {
                   board,
                 },
