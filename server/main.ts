@@ -65,6 +65,15 @@ io.on('connection', (socket) => {
     socket.broadcast.to(payload.gameId).emit('updateGame', payload);
   });
 
+  socket.on('requestGameState', (payload) => {
+    socket.join(payload.gameId);
+    return socket.broadcast.to(payload.gameId).emit('requestGameState', payload);
+  });
+
+  socket.on('gameState', (payload) => {
+    return socket.broadcast.to(payload.gameId).emit('gameState', payload);
+  });
+
   socket.on('disconnect', () => {
     console.log(`user disconnected ${socket.id}`);
   });

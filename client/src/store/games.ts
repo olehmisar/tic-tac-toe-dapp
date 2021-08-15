@@ -7,7 +7,12 @@ import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import create from 'zustand';
 import { combine, persist } from 'zustand/middleware';
-import { GameMatchedPayload, UpdateGamePayload } from '../../../server/types';
+import {
+  GameMatchedPayload,
+  GameStatePayload,
+  RequestGameStatePayload,
+  UpdateGamePayload,
+} from '../../../server/types';
 import { TicTacToe } from '../../../typechain';
 import { formatRPCError } from '../utils';
 import { useSocket } from './socket';
@@ -40,24 +45,30 @@ export type Game = {
   };
 };
 
-async function validateMoves(
-  ticTacToe: TicTacToe,
-  gameId: string,
-  moves: Move[],
-  myMovesSignature: string,
-  opponentMovesSignature: string,
+async function validateMoves({
+  ticTacToe,
+  gameId,
+  moves,
+  myMovesSignature,
+  opponentMovesSignature,
+  game,
+  updateState,
+}: {
+  ticTacToe: TicTacToe;
+  gameId: string;
+  moves: Move[];
+  myMovesSignature: string;
+  opponentMovesSignature: string;
+  game?: Game;
   updateState: (
-    data: {
-      gameId: string;
-      moves: Move[];
-      myMovesSignature: string;
-      opponentMovesSignature: string;
-      result: Result;
-      winner: string;
-    },
+    gameId: string,
+    payload: Pick<Game, 'moves' | 'myMovesSignature' | 'opponentMovesSignature' | 'result' | 'winner'>,
     board: string[][],
-  ) => void,
-) {
+  ) => void;
+}) {
+  if (game && game.moves.length >= moves.length) {
+    throw new Error('Too few moves');
+  }
   const { state, result, winner } = await ticTacToe.validateMoves(
     gameId,
     moves,
@@ -65,7 +76,8 @@ async function validateMoves(
     opponentMovesSignature,
   );
   updateState(
-    { gameId, moves, myMovesSignature, opponentMovesSignature, result: result as Result, winner },
+    gameId,
+    { moves, myMovesSignature, opponentMovesSignature, result: result as Result, winner },
     state.board,
   );
 }
@@ -75,7 +87,7 @@ export const useGame = (gameId: string) => {
   const { state: web3 } = useWeb3Provider();
   const { socket } = useSocket();
   useEffect(() => {
-    const listener = async ({ gameId, moves, signature }: UpdateGamePayload) => {
+    const updateGameListener = async ({ gameId, moves, signature }: UpdateGamePayload) => {
       const game = gamesStore.games[gameId];
       if (!web3) {
         message.error('Cannot update state. Not connected to blockchain');
@@ -87,16 +99,78 @@ export const useGame = (gameId: string) => {
       }
       const { ticTacToe } = web3;
       try {
-        await validateMoves(ticTacToe, gameId, moves, game.myMovesSignature, signature, gamesStore.updateGame);
+        await validateMoves({
+          ticTacToe,
+          gameId,
+          moves,
+          myMovesSignature: game.myMovesSignature,
+          opponentMovesSignature: signature,
+          game,
+          updateState: gamesStore.updateGame,
+        });
       } catch (e) {
         message.error(formatRPCError(e));
       }
     };
-    socket.on('updateGame', listener);
-    return () => {
-      socket.off('updateGame', listener);
+    const requestGameStateListener = ({ gameId }: RequestGameStatePayload) => {
+      const game = gamesStore.games[gameId];
+      if (!game) {
+        return;
+      }
+      socket.emit('gameState', {
+        gameId: game.gameId,
+        moves: game.moves,
+        me: game.opponent,
+        myMovesSignature: game.opponentMovesSignature,
+        opponent: game.me,
+        opponentMovesSignature: game.myMovesSignature,
+      });
     };
-  }, [gameId, gamesStore]);
+    const gameStateListener = async (payload: GameStatePayload) => {
+      if (!web3) {
+        message.error('Cannot update state. Not connected to blockchain');
+        return;
+      }
+      if (!gamesStore.games[payload.gameId]) {
+        gamesStore.addGame({
+          gameId: payload.gameId,
+          me: payload.me,
+          opponent: payload.opponent,
+          myMovesSignature: payload.myMovesSignature,
+          opponentMovesSignature: payload.opponentMovesSignature,
+        });
+        message.info('Loaded game state from opponent');
+      }
+
+      const { ticTacToe } = web3;
+      try {
+        await validateMoves({
+          ticTacToe,
+          gameId: payload.gameId,
+          moves: payload.moves,
+          myMovesSignature: payload.myMovesSignature,
+          opponentMovesSignature: payload.opponentMovesSignature,
+          game,
+          updateState: gamesStore.updateGame,
+        });
+      } catch (e) {
+        message.error(formatRPCError(e));
+      }
+    };
+    socket.on('updateGame', updateGameListener);
+    socket.on('requestGameState', requestGameStateListener);
+    socket.on('gameState', gameStateListener);
+    return () => {
+      socket.off('updateGame', updateGameListener);
+      socket.off('requestGameState', requestGameStateListener);
+      socket.off('gameState', gameStateListener);
+    };
+  }, [gameId, gamesStore, web3]);
+
+  useEffect(() => {
+    socket.emit('requestGameState', { gameId });
+  }, [gameId, web3]);
+
   const game = gamesStore.games[gameId];
   if (!game) {
     return undefined;
@@ -107,14 +181,15 @@ export const useGame = (gameId: string) => {
       const moves = [...game.moves, move];
       try {
         const myMovesSignature = await signer.signMessage(arrayify(await ticTacToe.encodeMoves(gameId, moves)));
-        await validateMoves(
+        await validateMoves({
           ticTacToe,
           gameId,
           moves,
           myMovesSignature,
-          game.opponentMovesSignature,
-          gamesStore.updateGame,
-        );
+          opponentMovesSignature: game.opponentMovesSignature,
+          game,
+          updateState: gamesStore.updateGame,
+        });
         socket.emit('updateGame', { gameId, moves, signature: myMovesSignature });
       } catch (e) {
         message.error(formatRPCError(e));
@@ -124,10 +199,9 @@ export const useGame = (gameId: string) => {
 };
 
 export const useGames = () => {
-  const { games, addGame } = useGamesStore();
+  const { addGame } = useGamesStore();
   const history = useHistory();
   return {
-    games,
     addGame,
     setCurrentGame(gameId: string) {
       history.push(`/play/${gameId}`);
@@ -156,21 +230,8 @@ const useGamesStore = create(
           set({ games: { ...get().games, [game.gameId]: game } });
         },
         updateGame(
-          {
-            gameId,
-            moves,
-            myMovesSignature,
-            opponentMovesSignature,
-            result,
-            winner,
-          }: {
-            gameId: string;
-            moves: Move[];
-            myMovesSignature: string;
-            opponentMovesSignature: string;
-            result: Result;
-            winner: string;
-          },
+          gameId: string,
+          payload: Pick<Game, 'moves' | 'myMovesSignature' | 'opponentMovesSignature' | 'result' | 'winner'>,
           board: string[][],
         ) {
           const game = get().games[gameId];
@@ -183,11 +244,7 @@ const useGamesStore = create(
               ...get().games,
               [gameId]: {
                 ...game,
-                moves,
-                myMovesSignature,
-                opponentMovesSignature,
-                result,
-                winner,
+                ...payload,
                 state: {
                   board,
                 },
