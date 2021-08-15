@@ -66,7 +66,7 @@ async function validateMoves({
     board: string[][],
   ) => void;
 }) {
-  if (game && game.moves.length >= moves.length) {
+  if (game && game.moves.length > moves.length) {
     throw new Error('Too few moves');
   }
   const { state, result, winner } = await ticTacToe.validateMoves(
