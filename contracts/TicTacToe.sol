@@ -99,11 +99,9 @@ contract TicTacToe {
         bytes calldata mySig,
         bytes calldata opponentSig
     ) public view returns (State memory state, uint8 result, address winner) {
-        require(moves.length > 0, "!moves");
         (address me, address opponent) = _validateMsgSender(getGame[gameId]);
-        address lastPlayer = moves[moves.length - 1].player;
-        _verifyMoves(gameId, moves, me, mySig, lastPlayer == me);
-        _verifyMoves(gameId, moves, opponent, opponentSig, lastPlayer == opponent);
+        _verifyMoves(gameId, moves, me, mySig);
+        _verifyMoves(gameId, moves, opponent, opponentSig);
         state = initialState(gameId);
         for (uint256 i = 0; i < moves.length; i++) {
             doMove(state, moves[i]);
@@ -115,8 +113,10 @@ contract TicTacToe {
         return keccak256(abi.encode(address(this), gameId, moves));
     }
 
-    function _verifyMoves(uint256 gameId, Move[] calldata moves, address signer, bytes calldata signature, bool isLast) private view {
-        _verify(encodeMoves(gameId, moves[0:moves.length - (isLast ? 0 : 1)]), signer, signature);
+    function _verifyMoves(uint256 gameId, Move[] calldata moves, address signer, bytes calldata signature) private view {
+        // the last player must sign all moves; the second last player must sign `moves.length - 1` moves.
+        uint256 offset = moves.length > 0 && moves[moves.length - 1].player != signer ? 1 : 0;
+        _verify(encodeMoves(gameId, moves[0:moves.length - offset]), signer, signature);
     }
 
     function checkWinners(

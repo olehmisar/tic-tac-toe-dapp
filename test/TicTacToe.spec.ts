@@ -53,7 +53,8 @@ describe('TicTacToe', () => {
 
   async function signMovesForBoth(gameId: BigNumberish, moves: Move[]) {
     const slicedMoves = moves.slice(0, -1);
-    const [moves0, moves1] = moves[moves.length - 1].player === player0 ? [moves, slicedMoves] : [slicedMoves, moves];
+    const [moves0, moves1] =
+      moves.length > 0 && moves[moves.length - 1].player === player0 ? [moves, slicedMoves] : [slicedMoves, moves];
     return await Promise.all([signMoves(player0Account, gameId, moves0), signMoves(player1Account, gameId, moves1)]);
   }
 
@@ -284,6 +285,19 @@ describe('TicTacToe', () => {
       const sig1 = await signWinner(player1Account, gameId, DRAW, AddressZero);
       await lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1);
       await expect(lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1)).to.be.revertedWith('game ended');
+    });
+  });
+
+  describe('#validateMoves', () => {
+    let gameId: BigNumberish;
+    beforeEach(async () => {
+      await startGame(player0Account, player1Account);
+      gameId = await lobby.getGameId(player0);
+    });
+
+    it('should accept empty moves', async () => {
+      const [sig0, sig1] = await signMovesForBoth(gameId, []);
+      await lobby.validateMoves(gameId, [], sig0, sig1); // OK
     });
   });
 
