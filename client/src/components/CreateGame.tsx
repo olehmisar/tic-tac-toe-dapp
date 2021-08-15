@@ -1,4 +1,5 @@
 import { arrayify } from '@ethersproject/bytes';
+import { AddressZero } from '@ethersproject/constants';
 import { message } from 'antd';
 import React, { FC } from 'react';
 import { useSocket } from '../store/socket';
@@ -18,9 +19,17 @@ export const CreateGame: FC = () => {
             try {
               const signer = provider.getSigner();
               const address = await signer.getAddress();
-              const gameId = (await ticTacToe.calcGameId(address)).toString();
-              const movesSignature = await signer.signMessage(arrayify(await ticTacToe.encodeMoves(gameId, [])));
-              socket.createGame({ gameId, creator: address, creatorMovesSignature: movesSignature });
+              const gameId = await ticTacToe.calcGameId(address);
+              const creatorGameStartSignature = await signer.signMessage(
+                arrayify(await ticTacToe.encodeGameStart(gameId, address, AddressZero)),
+              );
+              const creatorMovesSignature = await signer.signMessage(arrayify(await ticTacToe.encodeMoves(gameId, [])));
+              socket.createGame({
+                gameId: gameId.toString(),
+                creator: address,
+                creatorGameStartSignature,
+                creatorMovesSignature,
+              });
             } catch (e) {
               message.error(formatRPCError(e));
             }

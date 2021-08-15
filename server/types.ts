@@ -3,6 +3,7 @@ import { Move } from '../client/src/store/games';
 export type PendingGame = {
   gameId: string;
   creator: string;
+  creatorGameStartSignature: string;
   creatorMovesSignature: string;
   creatorSocketId: string;
 };
@@ -25,7 +26,10 @@ type CommonWsInterface = {
   gameState: (payload: GameStatePayload) => void;
 };
 
-export type CreateGamePayload = Pick<PendingGame, 'gameId' | 'creator' | 'creatorMovesSignature'>;
+export type CreateGamePayload = Pick<
+  PendingGame,
+  'gameId' | 'creator' | 'creatorGameStartSignature' | 'creatorMovesSignature'
+>;
 export type JoinGamePayload = { gameId: string; joined: string; joinedMovesSignature: string };
 export type ServerWsInterface = CommonWsInterface & {
   // TODO: remove this `cb`?

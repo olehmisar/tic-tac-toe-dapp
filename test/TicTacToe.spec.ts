@@ -43,7 +43,8 @@ describe('TicTacToe', () => {
   });
 
   async function signGameStart(signer: SignerWithAddress, player0: string, player1: string) {
-    return await signer.signMessage(arrayify(await lobby.encodeGameStart(player0, player1)));
+    const gameId = await lobby.calcGameId(player0);
+    return await signer.signMessage(arrayify(await lobby.encodeGameStart(gameId, player0, player1)));
   }
 
   async function signMoves(signer: SignerWithAddress, gameId: BigNumberish, moves: Move[]) {
@@ -61,7 +62,7 @@ describe('TicTacToe', () => {
   }
 
   async function startGame(acc0: SignerWithAddress, acc1: SignerWithAddress) {
-    const sig0 = await signGameStart(acc0, acc0.address, acc1.address);
+    const sig0 = await signGameStart(acc0, acc0.address, AddressZero);
     const sig1 = await signGameStart(acc1, acc0.address, acc1.address);
     return await lobby.startGame(acc0.address, acc1.address, sig0, sig1);
   }
@@ -83,7 +84,7 @@ describe('TicTacToe', () => {
 
   describe('#startGame', () => {
     it('should create a game object', async () => {
-      const sig0 = await signGameStart(player0Account, player0, player1);
+      const sig0 = await signGameStart(player0Account, player0, AddressZero);
       const sig1 = await signGameStart(player1Account, player0, player1);
       await lobby.startGame(player0, player1, sig0, sig1);
       const gameId = await lobby.getGameId(player0);
@@ -95,7 +96,7 @@ describe('TicTacToe', () => {
     });
 
     it('should NOT create a game if signatures are invalid', async () => {
-      const sig0 = await signGameStart(player0Account, player0, player1);
+      const sig0 = await signGameStart(player0Account, player0, AddressZero);
       const sig1 = await signGameStart(player1Account, player1, player0);
       await expect(lobby.startGame(player0, player1, sig0, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player1}")'`,

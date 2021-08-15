@@ -34,16 +34,14 @@ contract TicTacToe {
         address[SIZE][SIZE] board;
     }
 
-    function startGame(address creator, address joined, bytes calldata sig0, bytes calldata sig1) external {
+    function startGame(address creator, address joined, bytes calldata creatorSig, bytes calldata joinedSig) external {
         require(creator != joined, "same address");
         require(getGameId[creator] == 0, "already playing");
         require(getGameId[joined] == 0, "already playing");
-        bytes32 hash = encodeGameStart(creator, joined);
-        // TODO: uncomment
-        // _verify(hash, creator, sig0);
-        _verify(hash, joined, sig1);
-
         uint256 gameId = calcGameId(creator);
+        // TODO: should we include `joined` in `creatorSig`?
+        _verify(encodeGameStart(gameId, creator, address(0)), creator, creatorSig);
+        _verify(encodeGameStart(gameId, creator, joined), joined, joinedSig);
         nonces[creator]++;
         getGameId[creator] = gameId;
         getGameId[joined] = gameId;
@@ -55,10 +53,8 @@ contract TicTacToe {
         });
     }
 
-    function encodeGameStart(address player0, address player1) public view returns (bytes32) {
-        // TODO: include gameId in this calculation
-        // TODO: FIXME this hash is not unique
-        return keccak256(abi.encode(address(this), player0, player1));
+    function encodeGameStart(uint256 gameId, address creator, address joined) public view returns (bytes32) {
+        return keccak256(abi.encode(address(this), gameId, creator, joined));
     }
 
     function calcGameId(address creator) public view returns (uint256) {
