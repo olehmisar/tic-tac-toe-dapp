@@ -53,12 +53,12 @@ contract TicTacToe {
         });
     }
 
-    function encodeGameStart(uint256 gameId, address creator, address joined) public view returns (bytes32) {
-        return keccak256(abi.encode(address(this), gameId, creator, joined));
+    function encodeGameStart(uint256 gameId, address creator, address joined) public pure returns (bytes32) {
+        return keccak256(abi.encode(gameId, creator, joined));
     }
 
     function calcGameId(address creator) public view returns (uint256) {
-        return uint256(keccak256(abi.encode(address(this), creator, nonces[creator])));
+        return uint256(keccak256(abi.encode(block.chainid, address(this), creator, nonces[creator])));
     }
 
     function endGameWithWinner(
@@ -77,8 +77,8 @@ contract TicTacToe {
         _endGame(game, result, winner);
     }
 
-    function encodeWinner(uint256 gameId, uint8 result, address winner) public view returns (bytes32) {
-        return keccak256(abi.encode(address(this), gameId, result, winner));
+    function encodeWinner(uint256 gameId, uint8 result, address winner) public pure returns (bytes32) {
+        return keccak256(abi.encode(gameId, result, winner));
     }
 
     function endGameWithMoves(
@@ -109,11 +109,11 @@ contract TicTacToe {
         (result, winner) = checkWinners(state, moves.length, me, opponent);
     }
 
-    function encodeMoves(uint256 gameId, Move[] calldata moves) public view returns (bytes32) {
-        return keccak256(abi.encode(address(this), gameId, moves));
+    function encodeMoves(uint256 gameId, Move[] calldata moves) public pure returns (bytes32) {
+        return keccak256(abi.encode(gameId, moves));
     }
 
-    function _verifyMoves(uint256 gameId, Move[] calldata moves, address signer, bytes calldata signature) private view {
+    function _verifyMoves(uint256 gameId, Move[] calldata moves, address signer, bytes calldata signature) private pure {
         // the last player must sign all moves; the second last player must sign `moves.length - 1` moves.
         uint256 offset = moves.length > 0 && moves[moves.length - 1].player != signer ? 1 : 0;
         _verify(encodeMoves(gameId, moves[0:moves.length - offset]), signer, signature);
