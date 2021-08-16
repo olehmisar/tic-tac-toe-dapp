@@ -4,7 +4,7 @@ import { AddressZero } from '@ethersproject/constants';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { evmIncreaseTime, getBlockTimestamp } from '../shared/utils';
+import { evmIncreaseTime, getBlockTimestamp, snapshottedBeforeEach } from '../shared/utils';
 import { TicTacToe } from '../typechain';
 import { expectMoveEqual } from './matchers';
 
@@ -62,7 +62,7 @@ describe('TicTacToe', () => {
     ];
   });
 
-  beforeEach(async () => {
+  snapshottedBeforeEach(async () => {
     lobby = await (await ethers.getContractFactory('TicTacToe')).deploy();
   });
 
@@ -169,7 +169,7 @@ describe('TicTacToe', () => {
 
   describe('#endGameWithMoves', () => {
     let gameId: BigNumberish;
-    beforeEach(async () => {
+    snapshottedBeforeEach(async () => {
       gameId = await startGame(player0Account, player1Account);
     });
 
@@ -237,7 +237,7 @@ describe('TicTacToe', () => {
 
   describe('#endGameWithWinner', () => {
     let gameId: BigNumberish;
-    beforeEach(async () => {
+    snapshottedBeforeEach(async () => {
       gameId = await startGame(player0Account, player1Account);
     });
 
@@ -304,7 +304,7 @@ describe('TicTacToe', () => {
 
   describe('#endGameWithTimeout', () => {
     let gameId: BigNumberish;
-    beforeEach(async () => {
+    snapshottedBeforeEach(async () => {
       gameId = await startGame(player0Account, player1Account);
     });
 
@@ -367,7 +367,7 @@ describe('TicTacToe', () => {
 
     describe('#requestGameEndWithTimeout', () => {
       let moves: Move[];
-      beforeEach(async () => {
+      snapshottedBeforeEach(async () => {
         moves = [
           { player: player0, i: 0, j: 0 },
           { player: player1, i: 0, j: 1 },
@@ -446,7 +446,7 @@ describe('TicTacToe', () => {
     describe('#cancelGameEndWithTimeoutRequest', () => {
       let moves: Move[];
       let moreMoves: Move[];
-      beforeEach(async () => {
+      snapshottedBeforeEach(async () => {
         moves = [
           { player: player0, i: 0, j: 0 },
           { player: player1, i: 0, j: 1 },
@@ -493,7 +493,7 @@ describe('TicTacToe', () => {
 
   describe('#validateMoves', () => {
     let gameId: BigNumberish;
-    beforeEach(async () => {
+    snapshottedBeforeEach(async () => {
       gameId = await startGame(player0Account, player1Account);
     });
 
@@ -505,7 +505,7 @@ describe('TicTacToe', () => {
 
   describe('#validateMsgSender', () => {
     let gameId: BigNumberish;
-    beforeEach(async () => {
+    snapshottedBeforeEach(async () => {
       gameId = await startGame(player0Account, player1Account);
     });
 
@@ -525,7 +525,7 @@ describe('TicTacToe', () => {
 
   describe('win combinations', () => {
     let gameId: BigNumberish;
-    beforeEach(async () => {
+    snapshottedBeforeEach(async () => {
       gameId = await startGame(player0Account, player1Account);
     });
 

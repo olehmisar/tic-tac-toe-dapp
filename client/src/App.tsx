@@ -38,7 +38,16 @@ export const App: FC = () => {
     return () => {
       socket.off('gameMatched', listener);
     };
-  }, [web3, socket, history]);
+  }, [web3, socket, history, gameState]);
+  useEffect(() => {
+    if (!web3) {
+      return;
+    }
+    (async () => {
+      const chainId = await web3.provider.getSigner().getChainId();
+      socket.emit('requestGamePool', { chainId });
+    })();
+  }, [socket, web3]);
   return (
     <Layout style={{ height: '100%' }}>
       <PageHeader

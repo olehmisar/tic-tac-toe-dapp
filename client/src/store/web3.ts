@@ -31,6 +31,9 @@ export const useWeb3Provider = create(
           return;
         }
 
+        // TODO: don't require page reload when changing networks
+        p.on('chainChanged', () => window.location.reload());
+
         const signer = provider.getSigner();
         const chainId = (await signer.getChainId()) as keyof typeof config.addresses;
         if (!config.addresses[chainId]) {

@@ -1,6 +1,7 @@
 import { GameState, Move } from '../client/src/store/gameState';
 
 export type PendingGame = {
+  chainId: number;
   gameId: string;
   creator: string;
   creatorGameStartSignature: string;
@@ -19,11 +20,12 @@ type CommonWsInterface = {
 };
 
 export type CreateGamePayload = Omit<PendingGame, 'creatorSocketId'>;
-export type JoinGamePayload = { gameId: string };
+export type JoinGamePayload = { chainId: number; gameId: string };
 export type ServerWsInterface = CommonWsInterface & {
   // TODO: remove this `cb`?
   createGame: (payload: CreateGamePayload, cb: () => void) => void;
   joinGame: (payload: JoinGamePayload) => void;
+  requestGamePool: (payload: { chainId: number }) => void;
 };
 
 export type GameMatchedPayload = { gameId: string };

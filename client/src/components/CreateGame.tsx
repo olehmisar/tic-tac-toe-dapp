@@ -24,6 +24,7 @@ export const CreateGame: FC = () => {
                 arrayify(await ticTacToe.encodeGameStart(gameId, address, AddressZero)),
               );
               socket.createGame({
+                chainId: await signer.getChainId(),
                 gameId: gameId.toString(),
                 creator: address,
                 creatorGameStartSignature,

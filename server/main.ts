@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { Server } from 'socket.io';
-import { ClientWsInterface, GamePool, ServerWsInterface } from './types';
+import { ClientWsInterface, PendingGame, ServerWsInterface } from './types';
 
 const app = express();
 const buildPath = path.join(__dirname, '../client/dist');
@@ -10,7 +10,7 @@ app.use((req, res) => {
   res.sendFile(path.join(buildPath, 'index.html'));
 });
 
-const port = process.env.PORT || 8000;
+const port = process.env['PORT'] || 8000;
 const server = app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
@@ -22,39 +22,44 @@ const io = new Server<ServerWsInterface, ClientWsInterface>(server, {
   },
 });
 
-const gamePool: GamePool = {};
+const gamePools: Record<number, Record<string, PendingGame>> = {};
 io.on('connection', (socket) => {
   console.log(`a user connected ${socket.id}`);
+  const emitGamePool = ({ chainId }: { chainId: number }) => {
+    return io.to(chainId.toString()).emit('gamePool', gamePools[chainId] ?? {});
+  };
 
-  const emitGamePool = () => io.emit('gamePool', gamePool);
-  emitGamePool();
+  socket.on('requestGamePool', ({ chainId }) => {
+    socket.join(chainId.toString());
+    emitGamePool({ chainId });
+  });
 
   socket.on('createGame', (payload, cb) => {
-    if (gamePool[payload.gameId]) {
+    if (gamePools[payload.chainId]?.[payload.gameId]) {
       socket.emit('error', 'You cannot create more than two games');
       return;
     }
-    gamePool[payload.gameId] = {
+    (gamePools[payload.chainId] = gamePools[payload.chainId] ?? {})[payload.gameId] = {
       ...payload,
       creatorSocketId: socket.id,
     };
     socket.join(payload.gameId);
     console.log('new game', payload.gameId);
-    emitGamePool();
+    emitGamePool({ chainId: payload.chainId });
     cb();
   });
 
-  socket.on('joinGame', ({ gameId }) => {
-    const game = gamePool[gameId];
+  socket.on('joinGame', ({ chainId, gameId }) => {
+    const game = gamePools[chainId]?.[gameId];
     if (!game) {
       socket.emit('error', 'Game not found');
       return;
     }
-    delete gamePool[gameId];
+    delete gamePools[chainId]?.[gameId];
     socket.join(gameId);
     io.to(game.creatorSocketId).emit('gameMatched', { gameId });
     socket.emit('gameMatched', { gameId });
-    emitGamePool();
+    emitGamePool({ chainId });
   });
 
   socket.on('updateGame', (payload) => {

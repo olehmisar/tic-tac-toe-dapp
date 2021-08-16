@@ -4,7 +4,7 @@ import deployments from './deployments.json';
 const LOCALHOST_ID = 1337;
 const RINKEBY_ID = 4;
 
-export default {
+const config = {
   addresses: {
     [LOCALHOST_ID]: {
       TicTacToe: _.get(deployments, '1337.localhost.contracts.TicTacToe.address'),
@@ -14,3 +14,5 @@ export default {
     },
   },
 };
+
+export default config;

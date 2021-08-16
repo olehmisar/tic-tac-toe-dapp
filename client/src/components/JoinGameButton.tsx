@@ -26,7 +26,10 @@ export const JoinGameButton: FC<Props> = ({ game }) => {
               );
               const tx = await ticTacToe.startGame(game.creator, address, game.creatorGameStartSignature, signature);
               await tx.wait();
-              socket.joinGame({ gameId: game.gameId });
+              socket.joinGame({
+                chainId: await signer.getChainId(),
+                gameId: game.gameId,
+              });
             } catch (e) {
               message.error(formatRPCError(e));
               return;

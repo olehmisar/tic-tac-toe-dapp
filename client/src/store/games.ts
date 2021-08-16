@@ -48,11 +48,11 @@ export const useGame = (ticTacToe: TicTacToe, gameId: string) => {
       socket.off('requestGameState', requestGameStateListener);
       socket.off('gameState', gameStateListener);
     };
-  }, [ticTacToe, gameId]);
+  }, [socket, gameState, ticTacToe, gameId]);
 
   useEffect(() => {
     socket.emit('requestGameState', { gameId });
-  }, [gameId]);
+  }, [socket, gameId]);
 
   const game = gameState.get(gameId);
   if (!game) {

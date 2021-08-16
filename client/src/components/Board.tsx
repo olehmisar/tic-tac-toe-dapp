@@ -35,9 +35,9 @@ export const Board: FC<Props> = ({ game, onMove }) => {
 
 function addressToSymbol(address: string, addressA: string, addressB: string) {
   const [address0, address1] = addressA < addressB ? [addressA, addressB] : [addressB, addressA];
-  if (address == address0) {
+  if (address === address0) {
     return 'X';
-  } else if (address == address1) {
+  } else if (address === address1) {
     return 'O';
   }
   return ' ';
