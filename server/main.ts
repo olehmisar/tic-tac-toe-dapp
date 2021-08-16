@@ -62,6 +62,20 @@ io.on('connection', (socket) => {
     emitGamePool({ chainId });
   });
 
+  socket.on('gamePool.removeGame', ({ chainId, gameId }) => {
+    const game = gamePools[chainId]?.[gameId];
+    if (!game) {
+      socket.emit('error', 'Game not found');
+      return;
+    }
+    if (game.creatorSocketId !== socket.id) {
+      socket.emit('error', 'Not creator');
+      return;
+    }
+    delete gamePools[chainId]?.[gameId];
+    emitGamePool({ chainId });
+  });
+
   socket.on('updateGame', (payload) => {
     socket.broadcast.to(payload.gameId).emit('updateGame', payload);
   });
