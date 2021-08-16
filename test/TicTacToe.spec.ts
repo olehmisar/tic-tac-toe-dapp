@@ -510,6 +510,27 @@ describe('TicTacToe', () => {
     });
   });
 
+  describe('#validateMsgSender', () => {
+    let gameId: BigNumberish;
+    beforeEach(async () => {
+      await startGame(player0Account, player1Account);
+      gameId = await lobby.getGameId(player0);
+    });
+
+    it('should return players in correct order', async () => {
+      let [p0, p1] = await lobby.validateMsgSender(gameId);
+      expect(p0).to.eq(player0);
+      expect(p1).to.eq(player1);
+      [p1, p0] = await lobby.connect(player1Account).validateMsgSender(gameId);
+      expect(p0).to.eq(player0);
+      expect(p1).to.eq(player1);
+    });
+
+    it('should NOT return players if msg.sender is not in the game', async () => {
+      await expect(lobby.connect(player2Account).validateMsgSender(gameId)).to.be.revertedWith('!player');
+    });
+  });
+
   describe('win combinations', () => {
     let gameId: BigNumberish;
     beforeEach(async () => {

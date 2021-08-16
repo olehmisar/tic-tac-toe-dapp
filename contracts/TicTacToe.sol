@@ -89,12 +89,11 @@ contract TicTacToe {
         bytes calldata mySig,
         bytes calldata opponentSig
     ) external isInProgress(gameId) {
-        Game storage game = getGame[gameId];
-        (address me, address opponent) = _validateMsgSender(game);
+        (address me, address opponent) = validateMsgSender(gameId);
         bytes32 hash = encodeWinner(gameId, result, winner);
         _verify(hash, me, mySig);
         _verify(hash, opponent, opponentSig);
-        _endGame(game, result, winner);
+        _endGame(getGame[gameId], result, winner);
     }
 
     function encodeWinner(uint256 gameId, uint8 result, address winner) public pure returns (bytes32) {
@@ -117,7 +116,7 @@ contract TicTacToe {
         bytes calldata mySig,
         bytes calldata opponentSig
     ) public view returns (State memory state, uint8 result, address winner) {
-        (address me, address opponent) = _validateMsgSender(getGame[gameId]);
+        (address me, address opponent) = validateMsgSender(gameId);
         _verifyMoves(gameId, moves, me, mySig);
         _verifyMoves(gameId, moves, opponent, opponentSig);
         state = initialState(gameId);
@@ -162,7 +161,7 @@ contract TicTacToe {
         bytes calldata mySig,
         bytes calldata opponentSig
     ) private {
-        (address me,) = _validateMsgSender(getGame[gameId]);
+        (address me,) = validateMsgSender(gameId);
         require(moves.length > 1, "!moves");
         Move calldata lastMove = moves[moves.length - 1];
         require(lastMove.player == me, "move not provided");
@@ -178,13 +177,12 @@ contract TicTacToe {
     }
 
     function endGameWithTimeout(uint256 gameId) external isInProgress(gameId) {
-        Game storage game = getGame[gameId];
-        (address me,) = _validateMsgSender(game);
+        (address me,) = validateMsgSender(gameId);
         GameEndRequest storage request = getEndGameWithTimeoutRequest[gameId];
         require(request.kind == REQUEST_END_GAME, "!requested");
         require(request.requester == me, "!requester");
         require(block.timestamp > request.createdAt + GAME_END_TIMEOUT, "!timed out");
-        _endGame(game, WON, me);
+        _endGame(getGame[gameId], WON, me);
     }
 
     function checkWinners(
@@ -220,7 +218,8 @@ contract TicTacToe {
         getGameId[game.player1] = 0;
     }
 
-    function _validateMsgSender(Game storage game) private view returns (address me, address opponent) {
+    function validateMsgSender(uint256 gameId) public view returns (address me, address opponent) {
+        Game storage game = getGame[gameId];
         (address player0, address player1) = (game.player0, game.player1);
         if (player0 == msg.sender) {
             (me, opponent) = (player0, player1);
