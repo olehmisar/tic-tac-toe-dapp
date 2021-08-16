@@ -76,18 +76,12 @@ io.on('connection', (socket) => {
     emitGamePool({ chainId });
   });
 
-  socket.on('updateGame', (payload) => {
-    socket.broadcast.to(payload.gameId).emit('updateGame', payload);
-  });
-
-  socket.on('requestGameState', (payload) => {
-    socket.join(payload.gameId);
-    return socket.broadcast.to(payload.gameId).emit('requestGameState', payload);
-  });
-
-  socket.on('gameState', (payload) => {
-    return socket.broadcast.to(payload.gameId).emit('gameState', payload);
-  });
+  for (const ev of ['updateGame', 'requestGameState', 'gameState'] as const) {
+    socket.on(ev, (payload: { gameId: string }) => {
+      socket.join(payload.gameId);
+      socket.broadcast.to(payload.gameId).emit(ev, payload);
+    });
+  }
 
   socket.on('disconnect', () => {
     console.log(`user disconnected ${socket.id}`);
