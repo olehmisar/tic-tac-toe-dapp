@@ -16,6 +16,7 @@ const server = app.listen(port, () => {
 });
 
 const io = new Server<ServerWsInterface, ClientWsInterface>(server, {
+  path: '/api/socket',
   cors: {
     origin: '*',
   },
