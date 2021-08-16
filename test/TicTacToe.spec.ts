@@ -4,9 +4,11 @@ import { AddressZero } from '@ethersproject/constants';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
+import { evmIncreaseTime, getBlockTimestamp } from '../shared/utils';
 import { TicTacToe } from '../typechain';
+import { expectMoveEqual } from './matchers';
 
-interface Move {
+export interface Move {
   player: string;
   i: BigNumberish;
   j: BigNumberish;
@@ -16,15 +18,31 @@ const IN_PROGRESS = 0;
 const WON = 1;
 const DRAW = 2;
 
+const REQUEST_CANCEL_END_GAME = 0;
+const REQUEST_END_GAME = 1;
+
+const GAME_END_TIMEOUT = 60 * 60; // 1 hour
+
 describe('TicTacToe', () => {
   let player0Account: SignerWithAddress, player1Account: SignerWithAddress, player2Account: SignerWithAddress;
   let player0: string, player1: string, player2: string;
   let lobby: TicTacToe;
+  let winMoves: Move[];
   let drawMoves: Move[];
+  let randomSig: string;
   before(async () => {
     [player0Account, player1Account, player2Account] = await ethers.getSigners();
     [player0, player1, player2] = [player0Account, player1Account, player2Account].map((acc) => acc.address);
 
+    randomSig = await player0Account.signMessage('hello world');
+
+    winMoves = [
+      { player: player0, i: 0, j: 0 },
+      { player: player1, i: 1, j: 0 },
+      { player: player0, i: 0, j: 1 },
+      { player: player1, i: 1, j: 1 },
+      { player: player0, i: 0, j: 2 },
+    ];
     drawMoves = [
       { player: player0, i: 0, j: 0 },
       { player: player1, i: 0, j: 1 },
@@ -80,6 +98,9 @@ describe('TicTacToe', () => {
       expect(await lobby.DRAW()).to.eq(DRAW);
       expect(await lobby.WON()).to.eq(WON);
       expect(await lobby.SIZE()).to.eq(3);
+      expect(await lobby.REQUEST_CANCEL_END_GAME()).to.eq(REQUEST_CANCEL_END_GAME);
+      expect(await lobby.REQUEST_END_GAME()).to.eq(REQUEST_END_GAME);
+      expect(await lobby.GAME_END_TIMEOUT()).to.eq(GAME_END_TIMEOUT);
     });
   });
 
@@ -145,40 +166,32 @@ describe('TicTacToe', () => {
 
   describe('#endGameWithMoves', () => {
     let gameId: BigNumberish;
-    let validMoves: Move[];
     beforeEach(async () => {
       await startGame(player0Account, player1Account);
       gameId = await lobby.getGameId(player0);
-      validMoves = [
-        { player: player0, i: 0, j: 0 },
-        { player: player1, i: 1, j: 0 },
-        { player: player0, i: 0, j: 1 },
-        { player: player1, i: 1, j: 1 },
-        { player: player0, i: 0, j: 2 },
-      ];
     });
 
     it('should end a game with valid moves', async () => {
-      const sig0 = await signMoves(player0Account, gameId, validMoves);
-      const sig1 = await signMoves(player1Account, gameId, validMoves.slice(0, validMoves.length - 1));
-      await lobby.endGameWithMoves(gameId, validMoves, sig0, sig1);
+      const sig0 = await signMoves(player0Account, gameId, winMoves);
+      const sig1 = await signMoves(player1Account, gameId, winMoves.slice(0, winMoves.length - 1));
+      await lobby.endGameWithMoves(gameId, winMoves, sig0, sig1);
       const game = await lobby.getGame(gameId);
       expect(game.result).to.eq(WON);
       expect(game.winner).to.eq(player0);
     });
 
     it('should NOT end the game with invalid winner signature', async () => {
-      const sig0 = await signMoves(player0Account, gameId, validMoves.slice(0, 1));
-      const sig1 = await signMoves(player1Account, gameId, validMoves.slice(0, validMoves.length - 1));
-      await expect(lobby.endGameWithMoves(gameId, validMoves, sig0, sig1)).to.be.revertedWith(
+      const sig0 = await signMoves(player0Account, gameId, winMoves.slice(0, 1));
+      const sig1 = await signMoves(player1Account, gameId, winMoves.slice(0, winMoves.length - 1));
+      await expect(lobby.endGameWithMoves(gameId, winMoves, sig0, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player0}")'`,
       );
     });
 
     it('should NOT end the game with invalid loser signature', async () => {
-      const sig0 = await signMoves(player0Account, gameId, validMoves);
-      const sig1 = await signMoves(player1Account, gameId, validMoves);
-      await expect(lobby.endGameWithMoves(gameId, validMoves, sig0, sig1)).to.be.revertedWith(
+      const sig0 = await signMoves(player0Account, gameId, winMoves);
+      const sig1 = await signMoves(player1Account, gameId, winMoves);
+      await expect(lobby.endGameWithMoves(gameId, winMoves, sig0, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player1}")'`,
       );
     });
@@ -208,9 +221,9 @@ describe('TicTacToe', () => {
     });
 
     it('should NOT allow to request game end if game is already ended', async () => {
-      const [sig0, sig1] = await signMovesForBoth(gameId, validMoves);
-      await lobby.endGameWithMoves(gameId, validMoves, sig0, sig1);
-      await expect(lobby.endGameWithMoves(gameId, validMoves, sig0, sig1)).to.be.revertedWith('game ended');
+      const [sig0, sig1] = await signMovesForBoth(gameId, winMoves);
+      await lobby.endGameWithMoves(gameId, winMoves, sig0, sig1);
+      await expect(lobby.endGameWithMoves(gameId, winMoves, sig0, sig1)).to.be.revertedWith('game ended');
     });
 
     it('should NOT allow to end the game after a draw', async () => {
@@ -285,6 +298,176 @@ describe('TicTacToe', () => {
       const sig1 = await signWinner(player1Account, gameId, DRAW, AddressZero);
       await lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1);
       await expect(lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1)).to.be.revertedWith('game ended');
+    });
+  });
+
+  describe('#endGameWithTimeout', () => {
+    let gameId: BigNumberish;
+    beforeEach(async () => {
+      await startGame(player0Account, player1Account);
+      gameId = await lobby.getGameId(player0);
+    });
+
+    it('should end the game', async () => {
+      const moves = [{ player: player0, i: 0, j: 0 }];
+      await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+      await evmIncreaseTime(GAME_END_TIMEOUT);
+      await lobby.endGameWithTimeout(gameId);
+      const game = await lobby.getGame(gameId);
+      expect(game.result).to.eq(WON);
+      expect(game.winner).to.eq(player0);
+    });
+
+    it('should NOT end the game if msg.sender is not the requester', async () => {
+      const moves = [{ player: player0, i: 0, j: 0 }];
+      await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+      await evmIncreaseTime(GAME_END_TIMEOUT);
+      await expect(lobby.connect(player1Account).endGameWithTimeout(gameId)).to.be.revertedWith('!requester');
+    });
+
+    it('should NOT end the game if is not timed out yet', async () => {
+      const moves = [{ player: player0, i: 0, j: 0 }];
+      await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+      await evmIncreaseTime(GAME_END_TIMEOUT - 1);
+      await expect(lobby.endGameWithTimeout(gameId)).to.be.revertedWith('!timed out');
+    });
+
+    it('should NOT end the game if not requested', async () => {
+      await expect(lobby.endGameWithTimeout(gameId)).to.be.revertedWith('!requested');
+    });
+
+    it('should NOT end the game after request is cancelled', async () => {
+      // Request
+      const moves = [{ player: player0, i: 0, j: 0 }];
+      await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+      // Cancel
+      const moreMoves = [...moves, { player: player1, i: 0, j: 1 }];
+      const [sig0, sig1] = await signMovesForBoth(gameId, moreMoves);
+      await lobby.connect(player1Account).cancelGameEndWithTimeoutRequest(gameId, moreMoves, sig1, sig0);
+      await expect(lobby.endGameWithTimeout(gameId)).to.be.revertedWith('!requested');
+    });
+
+    it('should NOT end the game if game is already ended', async () => {
+      await endGame(gameId);
+      await expect(lobby.endGameWithTimeout(gameId)).to.be.revertedWith('game ended');
+    });
+
+    describe('#requestGameEndWithTimeout', () => {
+      let moves: Move[];
+      beforeEach(async () => {
+        moves = [
+          { player: player0, i: 0, j: 0 },
+          { player: player1, i: 0, j: 1 },
+          { player: player0, i: 0, j: 2 },
+        ];
+      });
+
+      it('should request game end and save the latest move to the state', async () => {
+        await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+        const req = await lobby.getEndGameWithTimeoutRequest(gameId);
+        expect(req.requester).to.eq(player0);
+        expect(req.kind).to.eq(REQUEST_END_GAME);
+        expect(req.createdAt).to.eq(await getBlockTimestamp());
+        expectMoveEqual(req.move, moves[moves.length - 1]);
+        expect(req.signature).to.eq(await signMoves(player0Account, gameId, moves));
+      });
+
+      it('should NOT request game end if game is already ended', async () => {
+        await endGame(gameId);
+        await expect(lobby.requestGameEndWithTimeout(gameId, [], randomSig, randomSig)).to.be.revertedWith(
+          'game ended',
+        );
+      });
+
+      it('should NOT request game end with empty moves', async () => {
+        await expect(
+          lobby.requestGameEndWithTimeout(gameId, [], ...(await signMovesForBoth(gameId, []))),
+        ).to.be.revertedWith('!moves');
+      });
+
+      it("should NOT request game end if the last move is not requester's move", async () => {
+        const moves = [
+          { player: player0, i: 0, j: 0 },
+          { player: player1, i: 0, j: 1 },
+        ];
+        await expect(
+          lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves))),
+        ).to.be.revertedWith('move not provided');
+      });
+
+      it('should NOT request game end with invalid moves', async () => {
+        const invalidMoves = [
+          { player: player0, i: 0, j: 0 },
+          { player: player1, i: 0, j: 1 },
+          { player: player0, i: 0, j: 1 },
+        ];
+        await expect(
+          lobby.requestGameEndWithTimeout(gameId, invalidMoves, ...(await signMovesForBoth(gameId, invalidMoves))),
+        ).to.be.revertedWith('!empty');
+      });
+
+      it('should NOT request game end if moves end the game', async () => {
+        await expect(
+          lobby.requestGameEndWithTimeout(gameId, winMoves, ...(await signMovesForBoth(gameId, winMoves))),
+        ).to.be.revertedWith('!in progress');
+      });
+
+      it('should NOT request game end if signatures are invalid', async () => {
+        const [sig0, sig1] = await signMovesForBoth(gameId, moves);
+        await expect(lobby.requestGameEndWithTimeout(gameId, moves, randomSig, sig1)).to.be.revertedWith(
+          `custom error 'BadSignature("${player0}")'`,
+        );
+        await expect(lobby.requestGameEndWithTimeout(gameId, moves, sig0, randomSig)).to.be.revertedWith(
+          `custom error 'BadSignature("${player1}")'`,
+        );
+      });
+    });
+
+    describe('#cancelGameEndWithTimeoutRequest', () => {
+      let moves: Move[];
+      let moreMoves: Move[];
+      beforeEach(async () => {
+        moves = [
+          { player: player0, i: 0, j: 0 },
+          { player: player1, i: 0, j: 1 },
+        ];
+        moreMoves = [...moves, { player: player0, i: 0, j: 2 }];
+        const sig0 = await signMoves(player0Account, gameId, moves.slice(0, -1));
+        const sig1 = await signMoves(player1Account, gameId, moves);
+        await lobby.connect(player1Account).requestGameEndWithTimeout(gameId, moves, sig1, sig0);
+      });
+
+      it('should cancel request and save the latest move to the state', async () => {
+        await lobby.cancelGameEndWithTimeoutRequest(gameId, moreMoves, ...(await signMovesForBoth(gameId, moreMoves)));
+        const req = await lobby.getEndGameWithTimeoutRequest(gameId);
+        expect(req.requester).to.eq(player0);
+        expect(req.kind).to.eq(REQUEST_CANCEL_END_GAME);
+        expect(req.createdAt).to.eq(await getBlockTimestamp());
+        expectMoveEqual(req.move, moreMoves[moreMoves.length - 1]);
+        expect(req.signature).to.eq(await signMoves(player0Account, gameId, moreMoves));
+      });
+
+      it('should NOT cancel request if not provided with a new move', async () => {
+        await expect(
+          lobby.cancelGameEndWithTimeoutRequest(gameId, moves, ...(await signMovesForBoth(gameId, moves))),
+        ).to.be.revertedWith('move not provided');
+      });
+
+      it('should NOT cancel request if new move ends the game', async () => {
+        await expect(
+          lobby.cancelGameEndWithTimeoutRequest(gameId, winMoves, ...(await signMovesForBoth(gameId, winMoves))),
+        ).to.be.revertedWith('!in progress');
+      });
+
+      it('should NOT cancel request if signature is invalid', async () => {
+        const [sig0, sig1] = await signMovesForBoth(gameId, moreMoves);
+        await expect(lobby.cancelGameEndWithTimeoutRequest(gameId, moreMoves, randomSig, sig1)).to.be.revertedWith(
+          `custom error 'BadSignature("${player0}")'`,
+        );
+        await expect(lobby.cancelGameEndWithTimeoutRequest(gameId, moreMoves, sig0, randomSig)).to.be.revertedWith(
+          `custom error 'BadSignature("${player1}")'`,
+        );
+      });
     });
   });
 
