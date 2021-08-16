@@ -23,12 +23,10 @@ export const CreateGame: FC = () => {
               const creatorGameStartSignature = await signer.signMessage(
                 arrayify(await ticTacToe.encodeGameStart(gameId, address, AddressZero)),
               );
-              const creatorMovesSignature = await signer.signMessage(arrayify(await ticTacToe.encodeMoves(gameId, [])));
               socket.createGame({
                 gameId: gameId.toString(),
                 creator: address,
                 creatorGameStartSignature,
-                creatorMovesSignature,
               });
             } catch (e) {
               message.error(formatRPCError(e));

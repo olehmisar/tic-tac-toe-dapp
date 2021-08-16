@@ -11,14 +11,12 @@ import {
   ServerWsInterface,
   UpdateGamePayload,
 } from '../../../server/types';
-import { useGames } from './games';
 
 const socket: Socket<ClientWsInterface, ServerWsInterface> = io('', { path: '/api/socket' });
 let initialized = false;
 
 export const useSocket = () => {
   const socketStore = useSocketStore();
-  const gamesStore = useGames();
   useEffect(() => {
     if (initialized) {
       return;
@@ -32,11 +30,6 @@ export const useSocket = () => {
     });
     socket.on('gamePool', (gamePool) => {
       socketStore.setGamePool(gamePool);
-    });
-    socket.on('gameMatched', (payload) => {
-      gamesStore.addGame(payload);
-      gamesStore.setCurrentGame(payload.gameId);
-      message.success('Game started');
     });
   });
   return {

@@ -14,7 +14,7 @@ export type Web3State = {
 export const useWeb3Provider = create(
   combine(
     {
-      state: undefined as Web3State | undefined,
+      web3: undefined as Web3State | undefined,
     },
     (set) => ({
       async connect() {
@@ -39,7 +39,7 @@ export const useWeb3Provider = create(
         }
         const addresses = config.addresses[chainId];
         set({
-          state: {
+          web3: {
             provider,
             ticTacToe: new TicTacToe__factory(signer).attach(addresses.TicTacToe),
           },
