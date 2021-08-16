@@ -2,6 +2,7 @@
 pragma solidity 0.8.4;
 
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 
 struct Game {
@@ -27,10 +28,12 @@ struct Move {
 }
 
 contract TicTacToe {
+    using EnumerableSet for EnumerableSet.UintSet;
+
     error BadSignature(address signer);
 
     mapping(uint256 => Game) public getGame;
-    mapping(address => uint256) public getGameId;
+    mapping(address => EnumerableSet.UintSet) private _unfinishedGameIds;
     mapping(address => uint256) public nonces;
 
     mapping(uint256 => GameEndRequest) public getEndGameWithTimeoutRequest;
@@ -57,15 +60,13 @@ contract TicTacToe {
 
     function startGame(address creator, address joined, bytes calldata creatorSig, bytes calldata joinedSig) external {
         require(creator != joined, "same address");
-        require(getGameId[creator] == 0, "already playing");
-        require(getGameId[joined] == 0, "already playing");
         uint256 gameId = calcGameId(creator);
         // TODO: should we include `joined` in `creatorSig`?
         _verify(encodeGameStart(gameId, creator, address(0)), creator, creatorSig);
         _verify(encodeGameStart(gameId, creator, joined), joined, joinedSig);
         nonces[creator]++;
-        getGameId[creator] = gameId;
-        getGameId[joined] = gameId;
+        _unfinishedGameIds[creator].add(gameId);
+        _unfinishedGameIds[joined].add(gameId);
         getGame[gameId] = Game({
             player0: creator,
             player1: joined,
@@ -82,6 +83,10 @@ contract TicTacToe {
         return uint256(keccak256(abi.encode(block.chainid, address(this), creator, nonces[creator])));
     }
 
+    function unfinishedGameIds(address player) external view returns (uint256[] memory) {
+        return _getEnumerableSetValues(_unfinishedGameIds[player]);
+    }
+
     function endGameWithWinner(
         uint256 gameId,
         uint8 result,
@@ -93,7 +98,7 @@ contract TicTacToe {
         bytes32 hash = encodeWinner(gameId, result, winner);
         _verify(hash, me, mySig);
         _verify(hash, opponent, opponentSig);
-        _endGame(getGame[gameId], result, winner);
+        _endGame(gameId, result, winner);
     }
 
     function encodeWinner(uint256 gameId, uint8 result, address winner) public pure returns (bytes32) {
@@ -107,7 +112,7 @@ contract TicTacToe {
         bytes calldata opponentSig
     ) external isInProgress(gameId) {
         (, uint8 result, address winner) = validateMoves(gameId, moves, mySig, opponentSig);
-        _endGame(getGame[gameId], result, winner);
+        _endGame(gameId, result, winner);
     }
 
     function validateMoves(
@@ -187,7 +192,7 @@ contract TicTacToe {
         require(request.kind == REQUEST_END_GAME, "!requested");
         require(request.requester == me, "!requester");
         require(block.timestamp > request.createdAt + GAME_END_TIMEOUT, "!timed out");
-        _endGame(getGame[gameId], WON, me);
+        _endGame(gameId, WON, me);
     }
 
     function checkWinners(
@@ -212,15 +217,16 @@ contract TicTacToe {
         return (IN_PROGRESS, address(0));
     }
 
-    function _endGame(Game storage game, uint8 result, address winner) private {
+    function _endGame(uint256 gameId, uint8 result, address winner) private {
         require(result == DRAW || result == WON, "!end");
         if (result == DRAW) {
             require(winner == address(0), "!address(0)");
         }
+        Game storage game = getGame[gameId];
         game.result = result;
         game.winner = winner;
-        getGameId[game.player0] = 0;
-        getGameId[game.player1] = 0;
+        _unfinishedGameIds[game.player0].remove(gameId);
+        _unfinishedGameIds[game.player1].remove(gameId);
     }
 
     function validateMsgSender(uint256 gameId) public view returns (address me, address opponent) {
@@ -314,5 +320,15 @@ contract TicTacToe {
         }
 
         return false;
+    }
+
+    // TODO: remove when https://github.com/OpenZeppelin/openzeppelin-contracts/issues/2825 is fixed
+    function _getEnumerableSetValues(EnumerableSet.UintSet storage set) private view returns(uint256[] memory) {
+        bytes32[] memory store = set._inner._values;
+        uint256[] memory result;
+        assembly {
+            result := store
+        }
+        return result;
     }
 }
