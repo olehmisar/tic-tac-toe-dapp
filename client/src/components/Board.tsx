@@ -21,7 +21,7 @@ export const Board: FC<Props> = ({ game, onMove }) => {
   return (
     <div>
       {game.state.board.map((row, i) => (
-        <div key={i} style={{ display: 'flex' }}>
+        <div key={i} style={{ display: 'flex', justifyContent: 'center' }}>
           {row.map((cell, j) => (
             <Cell key={j} onClick={async () => await onMove(i, j)}>
               {addressToSymbol(cell, game.me, game.opponent)}

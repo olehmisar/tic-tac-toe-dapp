@@ -10,7 +10,7 @@ export const BrandButton: FC<Props> = ({ onClick, children, ...props }) => {
   return (
     <Button
       {...props}
-      disabled={loading}
+      disabled={props.disabled || loading}
       onClick={async () => {
         if (!onClick) {
           return;
