@@ -9,10 +9,12 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitThis": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "resolveJsonModule": true
   },
-  "include": ["./deploy", "./test", "./scripts", "./typechain"],
+  "include": ["./deploy", "./test", "./scripts", "./typechain", "./server"],
   "files": ["./hardhat.config.ts"]
 }
