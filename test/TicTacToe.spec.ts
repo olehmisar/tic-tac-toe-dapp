@@ -29,6 +29,7 @@ describe('TicTacToe', () => {
   let lobby: TicTacToe;
   let winMoves: Move[];
   let drawMoves: Move[];
+  let inProgressMoves: Move[];
   let randomSig: string;
   before(async () => {
     [player0Account, player1Account, player2Account] = await ethers.getSigners();
@@ -53,6 +54,11 @@ describe('TicTacToe', () => {
       { player: player0, i: 1, j: 2 },
       { player: player1, i: 2, j: 2 },
       { player: player0, i: 2, j: 1 },
+    ];
+    inProgressMoves = [
+      { player: player0, i: 0, j: 0 },
+      { player: player1, i: 0, j: 1 },
+      { player: player0, i: 0, j: 2 },
     ];
   });
 
@@ -309,8 +315,11 @@ describe('TicTacToe', () => {
     });
 
     it('should end the game', async () => {
-      const moves = [{ player: player0, i: 0, j: 0 }];
-      await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+      await lobby.requestGameEndWithTimeout(
+        gameId,
+        inProgressMoves,
+        ...(await signMovesForBoth(gameId, inProgressMoves)),
+      );
       await evmIncreaseTime(GAME_END_TIMEOUT);
       await lobby.endGameWithTimeout(gameId);
       const game = await lobby.getGame(gameId);
@@ -319,15 +328,22 @@ describe('TicTacToe', () => {
     });
 
     it('should NOT end the game if msg.sender is not the requester', async () => {
-      const moves = [{ player: player0, i: 0, j: 0 }];
-      await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+      await lobby.requestGameEndWithTimeout(
+        gameId,
+        inProgressMoves,
+        ...(await signMovesForBoth(gameId, inProgressMoves)),
+      );
       await evmIncreaseTime(GAME_END_TIMEOUT);
       await expect(lobby.connect(player1Account).endGameWithTimeout(gameId)).to.be.revertedWith('!requester');
     });
 
     it('should NOT end the game if is not timed out yet', async () => {
       const moves = [{ player: player0, i: 0, j: 0 }];
-      await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+      await lobby.requestGameEndWithTimeout(
+        gameId,
+        inProgressMoves,
+        ...(await signMovesForBoth(gameId, inProgressMoves)),
+      );
       await evmIncreaseTime(GAME_END_TIMEOUT - 1);
       await expect(lobby.endGameWithTimeout(gameId)).to.be.revertedWith('!timed out');
     });
@@ -338,10 +354,13 @@ describe('TicTacToe', () => {
 
     it('should NOT end the game after request is cancelled', async () => {
       // Request
-      const moves = [{ player: player0, i: 0, j: 0 }];
-      await lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves)));
+      await lobby.requestGameEndWithTimeout(
+        gameId,
+        inProgressMoves,
+        ...(await signMovesForBoth(gameId, inProgressMoves)),
+      );
       // Cancel
-      const moreMoves = [...moves, { player: player1, i: 0, j: 1 }];
+      const moreMoves = [...inProgressMoves, { player: player1, i: 2, j: 2 }];
       const [sig0, sig1] = await signMovesForBoth(gameId, moreMoves);
       await lobby.connect(player1Account).cancelGameEndWithTimeoutRequest(gameId, moreMoves, sig1, sig0);
       await expect(lobby.endGameWithTimeout(gameId)).to.be.revertedWith('!requested');
@@ -370,6 +389,13 @@ describe('TicTacToe', () => {
         expect(req.createdAt).to.eq(await getBlockTimestamp());
         expectMoveEqual(req.move, moves[moves.length - 1]);
         expect(req.signature).to.eq(await signMoves(player0Account, gameId, moves));
+      });
+
+      it('should NOT request game end if opponent has not made a move', async () => {
+        const moves = [{ player: player0, i: 0, j: 0 }];
+        await expect(
+          lobby.requestGameEndWithTimeout(gameId, moves, ...(await signMovesForBoth(gameId, moves))),
+        ).to.be.revertedWith('!moves');
       });
 
       it('should NOT request game end if game is already ended', async () => {

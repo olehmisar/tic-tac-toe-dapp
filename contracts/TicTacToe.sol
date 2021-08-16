@@ -163,7 +163,7 @@ contract TicTacToe {
         bytes calldata opponentSig
     ) private {
         (address me,) = _validateMsgSender(getGame[gameId]);
-        require(moves.length > 0, "!moves");
+        require(moves.length > 1, "!moves");
         Move calldata lastMove = moves[moves.length - 1];
         require(lastMove.player == me, "move not provided");
         (, uint8 result,) = validateMoves(gameId, moves, mySig, opponentSig);
