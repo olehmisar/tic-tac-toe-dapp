@@ -38,7 +38,7 @@ export const App: FC = () => {
     return () => {
       socket.off('gameMatched', listener);
     };
-  }, [web3, socket, history]);
+  }, [web3, socket, history, gameState]);
   useEffect(() => {
     if (!web3) {
       return;

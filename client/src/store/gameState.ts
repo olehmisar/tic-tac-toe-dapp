@@ -6,6 +6,7 @@ import { TicTacToe } from '../../../typechain';
 
 // TODO: remove this and fetch from blockchain instead?
 export type Result = typeof Result[keyof typeof Result];
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Result = {
   IN_PROGRESS: 0,
   WON: 1,
