@@ -26,15 +26,15 @@ const gamePools: Record<number, Record<string, PendingGame>> = {};
 io.on('connection', (socket) => {
   console.log(`a user connected ${socket.id}`);
   const emitGamePool = ({ chainId }: { chainId: number }) => {
-    return io.to(chainId.toString()).emit('gamePool', gamePools[chainId] ?? {});
+    return io.to(chainId.toString()).emit('gamePool.gameList', gamePools[chainId] ?? {});
   };
 
-  socket.on('requestGamePool', ({ chainId }) => {
+  socket.on('gamePool.requestGameList', ({ chainId }) => {
     socket.join(chainId.toString());
     emitGamePool({ chainId });
   });
 
-  socket.on('createGame', (payload, cb) => {
+  socket.on('gamePool.createGame', (payload, cb) => {
     if (gamePools[payload.chainId]?.[payload.gameId]) {
       socket.emit('error', 'You cannot create more than two games');
       return;
@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
     cb();
   });
 
-  socket.on('joinGame', ({ chainId, gameId }) => {
+  socket.on('gamePool.joinGame', ({ chainId, gameId }) => {
     const game = gamePools[chainId]?.[gameId];
     if (!game) {
       socket.emit('error', 'Game not found');

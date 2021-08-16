@@ -3,14 +3,7 @@ import { useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
 import create from 'zustand';
 import { combine } from 'zustand/middleware';
-import {
-  ClientWsInterface,
-  CreateGamePayload,
-  GamePool,
-  JoinGamePayload,
-  ServerWsInterface,
-  UpdateGamePayload,
-} from '../../../server/types';
+import { ClientWsInterface, GamePool, ServerWsInterface } from '../../../server/types';
 
 const socket: Socket<ClientWsInterface, ServerWsInterface> = io('', { path: '/api/socket' });
 let initialized = false;
@@ -28,24 +21,13 @@ export const useSocket = () => {
     socket.on('error', (err) => {
       message.error(err);
     });
-    socket.on('gamePool', (gamePool) => {
+    socket.on('gamePool.gameList', (gamePool) => {
       socketStore.setGamePool(gamePool);
     });
   });
   return {
     socket,
     gamePool: socketStore.gamePool,
-    createGame(payload: CreateGamePayload) {
-      socket.emit('createGame', payload, () => {
-        message.success('Successfully created a game');
-      });
-    },
-    joinGame(payload: JoinGamePayload) {
-      socket.emit('joinGame', payload);
-    },
-    updateGame(payload: UpdateGamePayload) {
-      socket.emit('updateGame', payload);
-    },
   };
 };
 
