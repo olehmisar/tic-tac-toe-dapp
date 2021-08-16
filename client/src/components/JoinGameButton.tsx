@@ -24,10 +24,9 @@ export const JoinGameButton: FC<Props> = ({ game }) => {
               const signature = await signer.signMessage(
                 arrayify(await ticTacToe.encodeGameStart(game.gameId, game.creator, address)),
               );
-              const movesSignature = await signer.signMessage(arrayify(await ticTacToe.encodeMoves(game.gameId, [])));
               const tx = await ticTacToe.startGame(game.creator, address, game.creatorGameStartSignature, signature);
               await tx.wait();
-              socket.joinGame({ gameId: game.gameId, joined: address, joinedMovesSignature: movesSignature });
+              socket.joinGame({ gameId: game.gameId });
             } catch (e) {
               message.error(formatRPCError(e));
               return;

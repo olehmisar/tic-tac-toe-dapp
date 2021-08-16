@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
     cb();
   });
 
-  socket.on('joinGame', ({ gameId, joined, joinedMovesSignature }) => {
+  socket.on('joinGame', ({ gameId }) => {
     const game = gamePool[gameId];
     if (!game) {
       socket.emit('error', 'Game not found');
@@ -52,20 +52,8 @@ io.on('connection', (socket) => {
     }
     delete gamePool[gameId];
     socket.join(gameId);
-    io.to(game.creatorSocketId).emit('gameMatched', {
-      gameId,
-      me: game.creator,
-      myMovesSignature: game.creatorMovesSignature,
-      opponent: joined,
-      opponentMovesSignature: joinedMovesSignature,
-    });
-    socket.emit('gameMatched', {
-      gameId,
-      me: joined,
-      myMovesSignature: joinedMovesSignature,
-      opponent: game.creator,
-      opponentMovesSignature: game.creatorMovesSignature,
-    });
+    io.to(game.creatorSocketId).emit('gameMatched', { gameId });
+    socket.emit('gameMatched', { gameId });
     emitGamePool();
   });
 

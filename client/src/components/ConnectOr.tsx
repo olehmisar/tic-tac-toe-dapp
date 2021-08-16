@@ -7,12 +7,12 @@ type Props = {
 };
 
 export const ConnectOr: FC<Props> = ({ children }) => {
-  const { state, connect } = useWeb3Provider();
-  if (state) {
+  const { web3, connect } = useWeb3Provider();
+  if (web3) {
     if (typeof children !== 'function') {
       return children;
     }
-    return children(state);
+    return children(web3);
   }
   return (
     <BrandButton type="primary" onClick={connect}>

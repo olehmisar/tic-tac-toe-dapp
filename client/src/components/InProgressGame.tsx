@@ -10,7 +10,7 @@ type Props = {
   noGame?: ReactNode;
 };
 export const InProgressGame: FC<Props> = ({ noGame }) => {
-  const web3 = useWeb3Provider((s) => s.state);
+  const web3 = useWeb3Provider((s) => s.web3);
   const history = useHistory();
   const query = useQuery(`my-game-${!!web3}`, async () => {
     if (!web3) {

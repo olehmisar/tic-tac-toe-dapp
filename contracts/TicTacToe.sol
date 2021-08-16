@@ -133,7 +133,12 @@ contract TicTacToe {
     function _verifyMoves(uint256 gameId, Move[] calldata moves, address signer, bytes calldata signature) private pure {
         // the last player must sign all moves; the second last player must sign `moves.length - 1` moves.
         uint256 offset = moves.length > 0 && moves[moves.length - 1].player != signer ? 1 : 0;
-        _verify(encodeMoves(gameId, moves[0:moves.length - offset]), signer, signature);
+        Move[] calldata _moves = moves[0:moves.length - offset];
+        // Do not verify empty moves because users do not make initial signatures
+        if (_moves.length == 0) {
+            return;
+        }
+        _verify(encodeMoves(gameId, _moves), signer, signature);
     }
 
     function requestGameEndWithTimeout(

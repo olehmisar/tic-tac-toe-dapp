@@ -1,13 +1,13 @@
 import { Alert, message, Space } from 'antd';
 import React, { FC } from 'react';
-import { Game } from '../store/games';
+import { GameState } from '../store/gameState';
 import { formatRPCError } from '../utils';
 import { Await } from './Await';
 import { BrandButton } from './BrandButton';
 import { ConnectOr } from './ConnectOr';
 
 type Props = {
-  game: Game;
+  game: GameState;
 };
 export const RequestGameEndWithTimeout: FC<Props> = ({ game }) => {
   return (
@@ -25,15 +25,14 @@ export const RequestGameEndWithTimeout: FC<Props> = ({ game }) => {
               <>
                 {request.kind !== REQUEST_END_GAME ? (
                   <BrandButton
-                    // TODO: disable if `game.state.lastPlayer === game.me`
-                    disabled={game.moves.length < 2}
+                    disabled={game.state.lastPlayer === game.opponent || game.state.moves.length < 2}
                     onClick={async () => {
                       try {
                         await ticTacToe.requestGameEndWithTimeout(
                           game.gameId,
-                          game.moves,
-                          game.myMovesSignature,
-                          game.opponentMovesSignature,
+                          game.state.moves,
+                          game.state.myMovesSignature,
+                          game.state.opponentMovesSignature,
                         );
                       } catch (e) {
                         message.error(formatRPCError(e));
@@ -95,9 +94,9 @@ export const RequestGameEndWithTimeout: FC<Props> = ({ game }) => {
                         try {
                           await ticTacToe.cancelGameEndWithTimeoutRequest(
                             game.gameId,
-                            game.moves,
-                            game.myMovesSignature,
-                            game.opponentMovesSignature,
+                            game.state.moves,
+                            game.state.myMovesSignature,
+                            game.state.opponentMovesSignature,
                           );
                         } catch (e) {
                           message.error(formatRPCError(e));

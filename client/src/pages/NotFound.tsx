@@ -1,10 +1,20 @@
-import { Result } from 'antd';
-import React, { FC, ReactNode } from 'react';
+import { Result, ResultProps, Space } from 'antd';
+import React, { FC } from 'react';
 import { BrandLink } from '../components/BrandLink';
 
-type Props = {
-  title?: ReactNode;
-};
-export const NotFound: FC<Props> = ({ title = 'Not Found' }) => {
-  return <Result status="404" title={title} subTitle="404" extra={<BrandLink to="/">Back to homepage</BrandLink>} />;
+export const NotFound: FC<ResultProps> = (props) => {
+  return (
+    <Result
+      {...props}
+      status="404"
+      title={props.title ?? 'Not Found'}
+      subTitle={props.subTitle ?? '404'}
+      extra={
+        <Space direction="vertical">
+          {props.extra}
+          <BrandLink to="/">Back to homepage</BrandLink>
+        </Space>
+      }
+    />
+  );
 };

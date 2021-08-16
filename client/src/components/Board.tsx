@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Game } from '../store/games';
+import { GameState } from '../store/gameState';
 import { BrandButton } from './BrandButton';
 
 type CellProps = {
@@ -14,7 +14,7 @@ const Cell: FC<CellProps> = ({ onClick, children }) => {
 };
 
 type Props = {
-  game: Game;
+  game: GameState;
   onMove: (i: number, j: number) => Promise<void>;
 };
 export const Board: FC<Props> = ({ game, onMove }) => {
