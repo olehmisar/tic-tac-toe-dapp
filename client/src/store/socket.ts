@@ -13,7 +13,7 @@ import {
 } from '../../../server/types';
 import { useGames } from './games';
 
-const socket: Socket<ClientWsInterface, ServerWsInterface> = io();
+const socket: Socket<ClientWsInterface, ServerWsInterface> = io('', { path: '/api/socket' });
 let initialized = false;
 
 export const useSocket = () => {

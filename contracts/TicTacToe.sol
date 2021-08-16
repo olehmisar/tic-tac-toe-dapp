@@ -11,6 +11,15 @@ struct Game {
     uint8 result;
 }
 
+struct GameEndRequest {
+    address requester;
+    uint256 createdAt;
+    uint8 kind;
+    Move move;
+    // Signature of all previous moves + move from this request.
+    bytes signature;
+}
+
 struct Move {
     address player;
     uint256 i;
@@ -24,6 +33,13 @@ contract TicTacToe {
     mapping(address => uint256) public getGameId;
     mapping(address => uint256) public nonces;
 
+    mapping(uint256 => GameEndRequest) public getEndGameWithTimeoutRequest;
+    // TODO: adjust this value
+    // TODO: should this be configurable per game?
+    uint256 public constant GAME_END_TIMEOUT = 1 hours;
+    uint8 public constant REQUEST_CANCEL_END_GAME = 0;
+    uint8 public constant REQUEST_END_GAME = 1;
+
     uint8 public constant IN_PROGRESS = 0;
     uint8 public constant WON = 1;
     uint8 public constant DRAW = 2;
@@ -32,6 +48,11 @@ contract TicTacToe {
     struct State {
         address lastPlayer;
         address[SIZE][SIZE] board;
+    }
+
+    modifier isInProgress(uint256 gameId) {
+        require(getGame[gameId].result == IN_PROGRESS, "game ended");
+        _;
     }
 
     function startGame(address creator, address joined, bytes calldata creatorSig, bytes calldata joinedSig) external {
@@ -67,9 +88,8 @@ contract TicTacToe {
         address winner,
         bytes calldata mySig,
         bytes calldata opponentSig
-    ) external {
+    ) external isInProgress(gameId) {
         Game storage game = getGame[gameId];
-        require(game.result == IN_PROGRESS, "game ended");
         (address me, address opponent) = _validateMsgSender(game);
         bytes32 hash = encodeWinner(gameId, result, winner);
         _verify(hash, me, mySig);
@@ -86,11 +106,9 @@ contract TicTacToe {
         Move[] calldata moves,
         bytes calldata mySig,
         bytes calldata opponentSig
-    ) external {
-        Game storage game = getGame[gameId];
-        require(game.result == IN_PROGRESS, "game ended");
+    ) external isInProgress(gameId) {
         (, uint8 result, address winner) = validateMoves(gameId, moves, mySig, opponentSig);
-        _endGame(game, result, winner);
+        _endGame(getGame[gameId], result, winner);
     }
 
     function validateMoves(
@@ -117,6 +135,56 @@ contract TicTacToe {
         // the last player must sign all moves; the second last player must sign `moves.length - 1` moves.
         uint256 offset = moves.length > 0 && moves[moves.length - 1].player != signer ? 1 : 0;
         _verify(encodeMoves(gameId, moves[0:moves.length - offset]), signer, signature);
+    }
+
+    function requestGameEndWithTimeout(
+        uint256 gameId,
+        Move[] calldata moves,
+        bytes calldata mySig,
+        bytes calldata opponentSig
+    ) external isInProgress(gameId) {
+        _makeGameEndWithTimeoutRequest(REQUEST_END_GAME, gameId, moves, mySig, opponentSig);
+    }
+
+    function cancelGameEndWithTimeoutRequest(
+        uint256 gameId,
+        Move[] calldata moves,
+        bytes calldata mySig,
+        bytes calldata opponentSig
+    ) external isInProgress(gameId) {
+        _makeGameEndWithTimeoutRequest(REQUEST_CANCEL_END_GAME, gameId, moves, mySig, opponentSig);
+    }
+
+    function _makeGameEndWithTimeoutRequest(
+        uint8 kind,
+        uint256 gameId,
+        Move[] calldata moves,
+        bytes calldata mySig,
+        bytes calldata opponentSig
+    ) private {
+        (address me,) = _validateMsgSender(getGame[gameId]);
+        require(moves.length > 1, "!moves");
+        Move calldata lastMove = moves[moves.length - 1];
+        require(lastMove.player == me, "move not provided");
+        (, uint8 result,) = validateMoves(gameId, moves, mySig, opponentSig);
+        require(result == IN_PROGRESS, "!in progress");
+        getEndGameWithTimeoutRequest[gameId] = GameEndRequest({
+            requester: me,
+            kind: kind,
+            createdAt: block.timestamp,
+            move: lastMove,
+            signature: mySig
+        });
+    }
+
+    function endGameWithTimeout(uint256 gameId) external isInProgress(gameId) {
+        Game storage game = getGame[gameId];
+        (address me,) = _validateMsgSender(game);
+        GameEndRequest storage request = getEndGameWithTimeoutRequest[gameId];
+        require(request.kind == REQUEST_END_GAME, "!requested");
+        require(request.requester == me, "!requester");
+        require(block.timestamp > request.createdAt + GAME_END_TIMEOUT, "!timed out");
+        _endGame(game, WON, me);
     }
 
     function checkWinners(

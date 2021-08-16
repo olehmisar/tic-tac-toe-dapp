@@ -4,6 +4,7 @@ import { Await } from '../components/Await';
 import { Board } from '../components/Board';
 import { BrandButton } from '../components/BrandButton';
 import { ConnectOr } from '../components/ConnectOr';
+import { RequestGameEndWithTimeout } from '../components/RequestGameEndWithTimeout';
 import { Result, useGame } from '../store/games';
 import { formatRPCError } from '../utils';
 import { NotFound } from './NotFound';
@@ -58,6 +59,7 @@ export const Game: FC<Props> = ({ gameId }) => {
               }
             </Await>
           )}
+          {game.result === Result.IN_PROGRESS && <RequestGameEndWithTimeout game={game} />}
           <fieldset disabled={game.result !== Result.IN_PROGRESS}>
             <Board
               game={game}
