@@ -61,8 +61,7 @@ contract TicTacToe {
     function startGame(address creator, address joined, bytes calldata creatorSig, bytes calldata joinedSig) external {
         require(creator != joined, "same address");
         uint256 gameId = calcGameId(creator);
-        // TODO: should we include `joined` in `creatorSig`?
-        _verify(encodeGameStart(gameId, creator, address(0)), creator, creatorSig);
+        _verify(encodeGameStart(gameId, creator, joined), creator, creatorSig);
         _verify(encodeGameStart(gameId, creator, joined), joined, joinedSig);
         nonces[creator]++;
         _unfinishedGameIds[creator].add(gameId);
