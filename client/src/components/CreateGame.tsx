@@ -8,7 +8,7 @@ import { BrandButton } from './BrandButton';
 import { ConnectOr } from './ConnectOr';
 
 export const CreateGame: FC = () => {
-  const socket = useSocket();
+  const { socket } = useSocket();
   return (
     <ConnectOr>
       {({ provider, ticTacToe }) => (
@@ -23,12 +23,18 @@ export const CreateGame: FC = () => {
               const creatorGameStartSignature = await signer.signMessage(
                 arrayify(await ticTacToe.encodeGameStart(gameId, address, AddressZero)),
               );
-              socket.createGame({
-                chainId: await signer.getChainId(),
-                gameId: gameId.toString(),
-                creator: address,
-                creatorGameStartSignature,
-              });
+              socket.emit(
+                'gamePool.createGame',
+                {
+                  chainId: await signer.getChainId(),
+                  gameId: gameId.toString(),
+                  creator: address,
+                  creatorGameStartSignature,
+                },
+                () => {
+                  message.success('Successfully created a game');
+                },
+              );
             } catch (e) {
               message.error(formatRPCError(e));
             }

@@ -26,15 +26,15 @@ const gamePools: Record<number, Record<string, PendingGame>> = {};
 io.on('connection', (socket) => {
   console.log(`a user connected ${socket.id}`);
   const emitGamePool = ({ chainId }: { chainId: number }) => {
-    return io.to(chainId.toString()).emit('gamePool', gamePools[chainId] ?? {});
+    return io.to(chainId.toString()).emit('gamePool.gameList', gamePools[chainId] ?? {});
   };
 
-  socket.on('requestGamePool', ({ chainId }) => {
+  socket.on('gamePool.requestGameList', ({ chainId }) => {
     socket.join(chainId.toString());
     emitGamePool({ chainId });
   });
 
-  socket.on('createGame', (payload, cb) => {
+  socket.on('gamePool.createGame', (payload, cb) => {
     if (gamePools[payload.chainId]?.[payload.gameId]) {
       socket.emit('error', 'You cannot create more than two games');
       return;
@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
     cb();
   });
 
-  socket.on('joinGame', ({ chainId, gameId }) => {
+  socket.on('gamePool.joinGame', ({ chainId, gameId }) => {
     const game = gamePools[chainId]?.[gameId];
     if (!game) {
       socket.emit('error', 'Game not found');
@@ -62,18 +62,26 @@ io.on('connection', (socket) => {
     emitGamePool({ chainId });
   });
 
-  socket.on('updateGame', (payload) => {
-    socket.broadcast.to(payload.gameId).emit('updateGame', payload);
+  socket.on('gamePool.removeGame', ({ chainId, gameId }) => {
+    const game = gamePools[chainId]?.[gameId];
+    if (!game) {
+      socket.emit('error', 'Game not found');
+      return;
+    }
+    if (game.creatorSocketId !== socket.id) {
+      socket.emit('error', 'Not creator');
+      return;
+    }
+    delete gamePools[chainId]?.[gameId];
+    emitGamePool({ chainId });
   });
 
-  socket.on('requestGameState', (payload) => {
-    socket.join(payload.gameId);
-    return socket.broadcast.to(payload.gameId).emit('requestGameState', payload);
-  });
-
-  socket.on('gameState', (payload) => {
-    return socket.broadcast.to(payload.gameId).emit('gameState', payload);
-  });
+  for (const ev of ['updateGame', 'requestGameState', 'gameState'] as const) {
+    socket.on(ev, (payload: { gameId: string }) => {
+      socket.join(payload.gameId);
+      socket.broadcast.to(payload.gameId).emit(ev, payload);
+    });
+  }
 
   socket.on('disconnect', () => {
     console.log(`user disconnected ${socket.id}`);

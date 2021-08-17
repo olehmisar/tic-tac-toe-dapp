@@ -21,16 +21,18 @@ type CommonWsInterface = {
 
 export type CreateGamePayload = Omit<PendingGame, 'creatorSocketId'>;
 export type JoinGamePayload = { chainId: number; gameId: string };
+export type RemoveGamePayload = { chainId: number; gameId: string };
 export type ServerWsInterface = CommonWsInterface & {
   // TODO: remove this `cb`?
-  createGame: (payload: CreateGamePayload, cb: () => void) => void;
-  joinGame: (payload: JoinGamePayload) => void;
-  requestGamePool: (payload: { chainId: number }) => void;
+  'gamePool.createGame': (payload: CreateGamePayload, cb: () => void) => void;
+  'gamePool.joinGame': (payload: JoinGamePayload) => void;
+  'gamePool.removeGame': (payload: RemoveGamePayload) => void;
+  'gamePool.requestGameList': (payload: { chainId: number }) => void;
 };
 
 export type GameMatchedPayload = { gameId: string };
 export type ClientWsInterface = CommonWsInterface & {
   error: (message: string) => void;
   gameMatched: (payload: GameMatchedPayload) => void;
-  gamePool: (gamePool: GamePool) => void;
+  'gamePool.gameList': (gamePool: GamePool) => void;
 };

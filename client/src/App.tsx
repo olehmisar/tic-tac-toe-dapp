@@ -45,7 +45,7 @@ export const App: FC = () => {
     }
     (async () => {
       const chainId = await web3.provider.getSigner().getChainId();
-      socket.emit('requestGamePool', { chainId });
+      socket.emit('gamePool.requestGameList', { chainId });
     })();
   }, [socket, web3]);
   return (

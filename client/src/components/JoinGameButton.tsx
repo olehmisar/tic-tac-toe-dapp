@@ -11,7 +11,7 @@ type Props = {
   game: PendingGame;
 };
 export const JoinGameButton: FC<Props> = ({ game }) => {
-  const socket = useSocket();
+  const { socket } = useSocket();
   return (
     <ConnectOr>
       {({ provider, ticTacToe }) => (
@@ -26,7 +26,7 @@ export const JoinGameButton: FC<Props> = ({ game }) => {
               );
               const tx = await ticTacToe.startGame(game.creator, address, game.creatorGameStartSignature, signature);
               await tx.wait();
-              socket.joinGame({
+              socket.emit('gamePool.joinGame', {
                 chainId: await signer.getChainId(),
                 gameId: game.gameId,
               });
