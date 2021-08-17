@@ -49,19 +49,6 @@ io.on('connection', (socket) => {
     cb();
   });
 
-  socket.on('gamePool.joinGame', ({ chainId, gameId }) => {
-    const game = gamePools[chainId]?.[gameId];
-    if (!game) {
-      socket.emit('error', 'Game not found');
-      return;
-    }
-    delete gamePools[chainId]?.[gameId];
-    socket.join(gameId);
-    io.to(game.creatorSocketId).emit('gameMatched', { gameId });
-    socket.emit('gameMatched', { gameId });
-    emitGamePool({ chainId });
-  });
-
   socket.on('gamePool.removeGame', ({ chainId, gameId }) => {
     const game = gamePools[chainId]?.[gameId];
     if (!game) {
@@ -76,7 +63,13 @@ io.on('connection', (socket) => {
     emitGamePool({ chainId });
   });
 
-  for (const ev of ['updateGame', 'requestGameState', 'gameState'] as const) {
+  for (const ev of [
+    'updateGame',
+    'requestGameState',
+    'gameState',
+    'gamePool.joinGame',
+    'gamePool.gameMatched',
+  ] as const) {
     socket.on(ev, (payload: { gameId: string }) => {
       socket.join(payload.gameId);
       socket.broadcast.to(payload.gameId).emit(ev, payload);
