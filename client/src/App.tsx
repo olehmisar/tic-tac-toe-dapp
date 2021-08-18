@@ -34,6 +34,7 @@ export const App: FC = () => {
       } catch (e) {
         message.error('Failed to initialize game state');
       }
+      // TODO: show notification instead of forcefully navigating to game page
       history.push(`/play/${gameId}`);
       message.success('Game started');
     };
