@@ -86,7 +86,7 @@ contract TicTacToe {
         return _getEnumerableSetValues(_unfinishedGameIds[player]);
     }
 
-    function endGameWithWinner(
+    function endGameWithResult(
         uint256 gameId,
         uint8 result,
         address winner,
@@ -94,13 +94,13 @@ contract TicTacToe {
         bytes calldata opponentSig
     ) external isInProgress(gameId) {
         (address me, address opponent) = validateMsgSender(gameId);
-        bytes32 hash = encodeWinner(gameId, result, winner);
+        bytes32 hash = encodeResult(gameId, result, winner);
         _verify(hash, me, mySig);
         _verify(hash, opponent, opponentSig);
         _endGame(gameId, result, winner);
     }
 
-    function encodeWinner(uint256 gameId, uint8 result, address winner) public pure returns (bytes32) {
+    function encodeResult(uint256 gameId, uint8 result, address winner) public pure returns (bytes32) {
         return keccak256(abi.encode(gameId, result, winner));
     }
 
