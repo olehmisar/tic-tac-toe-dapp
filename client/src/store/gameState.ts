@@ -1,8 +1,9 @@
-import { hexlify } from '@ethersproject/bytes';
+import { arrayify, hexlify } from '@ethersproject/bytes';
 import produce from 'immer';
 import create from 'zustand';
 import { combine, persist } from 'zustand/middleware';
 import { TicTacToe } from '../../../typechain';
+import { Web3State } from './web3';
 
 // TODO: remove this and fetch from blockchain instead?
 export type Result = typeof Result[keyof typeof Result];
@@ -23,6 +24,8 @@ export type GameState = {
     myMovesSignature: string;
     opponentMovesSignature: string;
     moves: Move[];
+    myResultSignature: string | null;
+    opponentResultSignature: string | null;
     lastPlayer: string;
     board: string[][];
   };
@@ -44,12 +47,13 @@ export const useGameState = () => {
       store.set(gameId, await newGame(ticTacToe, gameId));
     },
     async validateAndStore(
-      ticTacToe: TicTacToe,
+      { provider, ticTacToe }: Web3State,
       gameId: string,
       payload: {
         moves: Move[];
         myMovesSignature?: string;
         opponentMovesSignature?: string;
+        opponentResultSignature?: string | null;
       },
     ) {
       const game = store.get(gameId) ?? (await newGame(ticTacToe, gameId));
@@ -64,20 +68,26 @@ export const useGameState = () => {
         myMovesSignature,
         opponentMovesSignature,
       );
-      store.set(
-        gameId,
-        produce(game, (g) => {
-          g.state = {
-            result: result as Result,
-            winner,
-            moves: payload.moves,
-            myMovesSignature,
-            opponentMovesSignature,
-            lastPlayer: state.lastPlayer,
-            board: state.board,
-          };
-        }),
-      );
+      const signer = provider.getSigner();
+      const myResultSignature =
+        result !== Result.IN_PROGRESS && !game.state.myResultSignature
+          ? await signer.signMessage(arrayify(await ticTacToe.encodeResult(gameId, result, winner)))
+          : game.state.myResultSignature;
+      const newState = produce(game, (g) => {
+        g.state = {
+          result: result as Result,
+          winner,
+          moves: payload.moves,
+          myMovesSignature,
+          opponentMovesSignature,
+          myResultSignature,
+          opponentResultSignature: payload.opponentResultSignature ?? g.state.opponentResultSignature,
+          lastPlayer: state.lastPlayer,
+          board: state.board,
+        };
+      });
+      store.set(gameId, newState);
+      return newState;
     },
     get(gameId: string) {
       return store.get(gameId);
@@ -99,6 +109,8 @@ async function newGame(ticTacToe: TicTacToe, gameId: string): Promise<GameState>
       myMovesSignature: hexlify(0),
       opponentMovesSignature: hexlify(0),
       moves: [],
+      myResultSignature: null,
+      opponentResultSignature: null,
       lastPlayer: initialState.lastPlayer,
       board: initialState.board,
     },

@@ -82,8 +82,8 @@ describe('TicTacToe', () => {
     return await Promise.all([signMoves(player0Account, gameId, moves0), signMoves(player1Account, gameId, moves1)]);
   }
 
-  async function signWinner(signer: SignerWithAddress, gameId: BigNumberish, result: BigNumberish, winner: string) {
-    return await signer.signMessage(arrayify(await lobby.encodeWinner(gameId, result, winner)));
+  async function signResult(signer: SignerWithAddress, gameId: BigNumberish, result: BigNumberish, winner: string) {
+    return await signer.signMessage(arrayify(await lobby.encodeResult(gameId, result, winner)));
   }
 
   async function startGame(acc0: SignerWithAddress, acc1: SignerWithAddress) {
@@ -95,9 +95,9 @@ describe('TicTacToe', () => {
   }
 
   async function endGame(gameId: BigNumberish) {
-    const sig0 = await signWinner(player0Account, gameId, DRAW, AddressZero);
-    const sig1 = await signWinner(player1Account, gameId, DRAW, AddressZero);
-    await lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1);
+    const sig0 = await signResult(player0Account, gameId, DRAW, AddressZero);
+    const sig1 = await signResult(player1Account, gameId, DRAW, AddressZero);
+    await lobby.endGameWithResult(gameId, DRAW, AddressZero, sig0, sig1);
   }
 
   describe('constructor', () => {
@@ -235,70 +235,70 @@ describe('TicTacToe', () => {
     });
   });
 
-  describe('#endGameWithWinner', () => {
+  describe('#endGameWithResult', () => {
     let gameId: BigNumberish;
     snapshottedBeforeEach(async () => {
       gameId = await startGame(player0Account, player1Account);
     });
 
     it('should end the game with valid signatures and the same winner', async () => {
-      const sig0 = await signWinner(player0Account, gameId, WON, player0);
-      const sig1 = await signWinner(player1Account, gameId, WON, player0);
-      await lobby.endGameWithWinner(gameId, WON, player0, sig0, sig1);
+      const sig0 = await signResult(player0Account, gameId, WON, player0);
+      const sig1 = await signResult(player1Account, gameId, WON, player0);
+      await lobby.endGameWithResult(gameId, WON, player0, sig0, sig1);
       const game = await lobby.getGame(gameId);
       expect(game.result).to.eq(WON);
       expect(game.winner).to.eq(player0);
     });
 
     it('should end the game with draw result', async () => {
-      const sig0 = await signWinner(player0Account, gameId, DRAW, AddressZero);
-      const sig1 = await signWinner(player1Account, gameId, DRAW, AddressZero);
-      await lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1);
+      const sig0 = await signResult(player0Account, gameId, DRAW, AddressZero);
+      const sig1 = await signResult(player1Account, gameId, DRAW, AddressZero);
+      await lobby.endGameWithResult(gameId, DRAW, AddressZero, sig0, sig1);
       const game = await lobby.getGame(gameId);
       expect(game.result).to.eq(DRAW);
       expect(game.winner).to.eq(AddressZero);
     });
 
     it('should NOT end the game with different winner', async () => {
-      const sig0 = await signWinner(player0Account, gameId, WON, player0);
-      const sig1 = await signWinner(player1Account, gameId, WON, player1);
-      await expect(lobby.endGameWithWinner(gameId, WON, player0, sig0, sig1)).to.be.revertedWith(
+      const sig0 = await signResult(player0Account, gameId, WON, player0);
+      const sig1 = await signResult(player1Account, gameId, WON, player1);
+      await expect(lobby.endGameWithResult(gameId, WON, player0, sig0, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player1}")'`,
       );
-      await expect(lobby.endGameWithWinner(gameId, WON, player1, sig0, sig1)).to.be.revertedWith(
+      await expect(lobby.endGameWithResult(gameId, WON, player1, sig0, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player0}")'`,
       );
     });
 
     it('should NOT end the game with invalid signatures', async () => {
-      const sig0 = await signWinner(player0Account, gameId, WON, player0);
-      const sig1 = await signWinner(player1Account, gameId, WON, player0);
-      await expect(lobby.endGameWithWinner(gameId, WON, player0, sig0, sig0)).to.be.revertedWith(
+      const sig0 = await signResult(player0Account, gameId, WON, player0);
+      const sig1 = await signResult(player1Account, gameId, WON, player0);
+      await expect(lobby.endGameWithResult(gameId, WON, player0, sig0, sig0)).to.be.revertedWith(
         `custom error 'BadSignature("${player1}")'`,
       );
-      await expect(lobby.endGameWithWinner(gameId, WON, player0, sig1, sig1)).to.be.revertedWith(
+      await expect(lobby.endGameWithResult(gameId, WON, player0, sig1, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player0}")'`,
       );
     });
 
     it('should NOT end the game with draw result and non-zero address', async () => {
-      const sig0 = await signWinner(player0Account, gameId, DRAW, player0);
-      const sig1 = await signWinner(player1Account, gameId, DRAW, player0);
-      await expect(lobby.endGameWithWinner(gameId, DRAW, player0, sig0, sig1)).to.be.revertedWith('!address(0)');
+      const sig0 = await signResult(player0Account, gameId, DRAW, player0);
+      const sig1 = await signResult(player1Account, gameId, DRAW, player0);
+      await expect(lobby.endGameWithResult(gameId, DRAW, player0, sig0, sig1)).to.be.revertedWith('!address(0)');
     });
 
     it('should NOT end the game after win', async () => {
-      const sig0 = await signWinner(player0Account, gameId, WON, player0);
-      const sig1 = await signWinner(player1Account, gameId, WON, player0);
-      await lobby.endGameWithWinner(gameId, WON, player0, sig0, sig1);
-      await expect(lobby.endGameWithWinner(gameId, WON, player0, sig0, sig1)).to.be.revertedWith('game ended');
+      const sig0 = await signResult(player0Account, gameId, WON, player0);
+      const sig1 = await signResult(player1Account, gameId, WON, player0);
+      await lobby.endGameWithResult(gameId, WON, player0, sig0, sig1);
+      await expect(lobby.endGameWithResult(gameId, WON, player0, sig0, sig1)).to.be.revertedWith('game ended');
     });
 
     it('should NOT end the game after draw', async () => {
-      const sig0 = await signWinner(player0Account, gameId, DRAW, AddressZero);
-      const sig1 = await signWinner(player1Account, gameId, DRAW, AddressZero);
-      await lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1);
-      await expect(lobby.endGameWithWinner(gameId, DRAW, AddressZero, sig0, sig1)).to.be.revertedWith('game ended');
+      const sig0 = await signResult(player0Account, gameId, DRAW, AddressZero);
+      const sig1 = await signResult(player1Account, gameId, DRAW, AddressZero);
+      await lobby.endGameWithResult(gameId, DRAW, AddressZero, sig0, sig1);
+      await expect(lobby.endGameWithResult(gameId, DRAW, AddressZero, sig0, sig1)).to.be.revertedWith('game ended');
     });
   });
 

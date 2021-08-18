@@ -64,9 +64,8 @@ io.on('connection', (socket) => {
   });
 
   for (const ev of [
-    'updateGame',
-    'requestGameState',
-    'gameState',
+    'gameState.requestGameState',
+    'gameState.gameState',
     'gamePool.joinGame',
     'gamePool.gameMatched',
   ] as const) {

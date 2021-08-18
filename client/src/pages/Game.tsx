@@ -14,8 +14,9 @@ type Props = {
   gameId: string;
   web3: Web3State;
 };
-export const Game: FC<Props> = ({ gameId, web3: { ticTacToe, provider } }) => {
-  const state = useGame(ticTacToe, gameId);
+export const Game: FC<Props> = ({ gameId, web3 }) => {
+  const { provider, ticTacToe } = web3;
+  const state = useGame(web3, gameId);
   const gameState = useGameState();
   if (!state) {
     return (
@@ -59,25 +60,47 @@ export const Game: FC<Props> = ({ gameId, web3: { ticTacToe, provider } }) => {
         <Await promise={ticTacToe.getGame(gameId)}>
           {(blockchainGame) =>
             blockchainGame.result === Result.IN_PROGRESS && (
-              <BrandButton
-                type="primary"
-                onClick={async () => {
-                  try {
-                    const tx = await ticTacToe.endGameWithMoves(
-                      gameId,
-                      game.state.moves,
-                      game.state.myMovesSignature,
-                      game.state.opponentMovesSignature,
-                    );
-                    await tx.wait();
-                    message.success('Data committed successfully');
-                  } catch (e) {
-                    message.error(formatRPCError(e));
-                  }
-                }}
-              >
-                Commit data to blockchain
-              </BrandButton>
+              <Space direction='vertical'>
+                <BrandButton
+                  type="primary"
+                  disabled={!game.state.myResultSignature || !game.state.opponentResultSignature}
+                  onClick={async () => {
+                    try {
+                      const tx = await ticTacToe.endGameWithResult(
+                        gameId,
+                        game.state.result,
+                        game.state.winner,
+                        game.state.myResultSignature!,
+                        game.state.opponentResultSignature!,
+                      );
+                      await tx.wait();
+                      message.success('Data committed successfully');
+                    } catch (e) {
+                      message.error(formatRPCError(e));
+                    }
+                  }}
+                >
+                  Commit data to blockchain with result signatures
+                </BrandButton>
+                <BrandButton
+                  onClick={async () => {
+                    try {
+                      const tx = await ticTacToe.endGameWithMoves(
+                        gameId,
+                        game.state.moves,
+                        game.state.myMovesSignature,
+                        game.state.opponentMovesSignature,
+                      );
+                      await tx.wait();
+                      message.success('Data committed successfully');
+                    } catch (e) {
+                      message.error(formatRPCError(e));
+                    }
+                  }}
+                >
+                  Commit data to blockchain with moves
+                </BrandButton>
+              </Space>
             )
           }
         </Await>
