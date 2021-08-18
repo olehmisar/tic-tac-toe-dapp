@@ -71,8 +71,8 @@ io.on('connection', (socket) => {
     'gamePool.gameMatched',
   ] as const) {
     socket.on(ev, (payload: { gameId: string }) => {
-      socket.join(payload.gameId);
-      socket.broadcast.to(payload.gameId).emit(ev, payload);
+      // TODO: don't broadcast all messages to every player
+      socket.broadcast.emit(ev, payload);
     });
   }
 

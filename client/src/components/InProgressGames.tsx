@@ -1,9 +1,9 @@
-import { Alert, Card, List, Space, Spin } from 'antd';
+import { Alert, Card, Space, Spin, Typography } from 'antd';
 import React, { FC } from 'react';
 import { useQuery } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import { useWeb3Provider } from '../store/web3';
-import { BrandButton } from './BrandButton';
+import { BrandLink } from './BrandLink';
 import { DisplayAddress } from './DisplayAddress';
 
 export const InProgressGames: FC = () => {
@@ -31,31 +31,34 @@ export const InProgressGames: FC = () => {
     return <Alert closable type="error" message="Failed to load" />;
   }
   const games = query.data ?? [];
+  const limit = 3;
   return (
-    <List
-      dataSource={games}
-      renderItem={(game) => (
-        <List.Item key={game.gameId}>
-          <Card title={'You are in the game!'}>
+    <Space direction="vertical">
+      <Typography.Title level={3}>My games</Typography.Title>
+      <Space wrap>
+        {games.slice(0, limit).map((game) => (
+          <Card title={'You are in the game!'} key={game.gameId}>
             <Card.Meta
               description={
                 <Space size="large" direction="vertical">
                   <span>
                     <DisplayAddress address={game.player0} /> vs <DisplayAddress address={game.player1} />
                   </span>
-                  <BrandButton
-                    onClick={() => {
-                      history.push(`/play/${game.gameId}`);
-                    }}
-                  >
+                  <BrandLink type="default" to={`/play/${game.gameId}`}>
                     Continue playing
-                  </BrandButton>
+                  </BrandLink>
                 </Space>
               }
             />
           </Card>
-        </List.Item>
+        ))}
+      </Space>
+      {games.length > limit && (
+        // TODO: make this page
+        <BrandLink type="default" to="/unfinished-games">
+          See all
+        </BrandLink>
       )}
-    />
+    </Space>
   );
 };
