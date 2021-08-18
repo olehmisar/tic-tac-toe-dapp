@@ -5,7 +5,9 @@ import create from 'zustand';
 import { combine } from 'zustand/middleware';
 import { ClientWsInterface, GamePool, ServerWsInterface } from '../../../server/types';
 
-const socket: Socket<ClientWsInterface, ServerWsInterface> = io('', { path: '/api/socket' });
+// TODO: extract to config
+const socketUrl = window.location.hostname === 'localhost' ? 'localhost:8000' : '';
+const socket: Socket<ClientWsInterface, ServerWsInterface> = io(socketUrl, { path: '/api/socket' });
 let initialized = false;
 
 export const useSocket = () => {
