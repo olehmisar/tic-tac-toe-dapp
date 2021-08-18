@@ -8,6 +8,7 @@ export const Notifications: FC = () => {
   return (
     <Popover
       trigger="click"
+      overlayInnerStyle={{ maxHeight: '80vh', overflow: 'auto' }}
       content={
         <List
           dataSource={notifications.box}

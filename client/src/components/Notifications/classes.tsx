@@ -26,11 +26,6 @@ export class JoinGameRequestNotification extends Notification {
     /* eslint-enable */
     return (
       <Card
-        title={
-          <>
-            <DisplayAddress address={payload.joined} /> wants to join your game
-          </>
-        }
         actions={[
           <ConnectOr>
             {({ provider, ticTacToe }) => (
@@ -65,7 +60,9 @@ export class JoinGameRequestNotification extends Notification {
             )}
           </ConnectOr>,
         ]}
-      />
+      >
+        <DisplayAddress address={payload.joined} /> wants to join your game
+      </Card>
     );
   };
 }

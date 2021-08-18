@@ -6,6 +6,7 @@ import { GamePoolGameMatched, GamePoolJoinGamePayload } from '../../server/types
 import { Await } from './components/Await';
 import { BrandButton } from './components/BrandButton';
 import { ConnectOr } from './components/ConnectOr';
+import { Container } from './components/Container';
 import { DisplayAddress } from './components/DisplayAddress';
 import { JoinGameRequestNotification, Notifications, useNotifications } from './components/Notifications';
 import { Game } from './pages/Game';
@@ -61,8 +62,9 @@ export const App: FC = () => {
     })();
   }, [socket, web3]);
   return (
-    <Layout style={{ height: '100%' }}>
+    <Layout style={{ minHeight: '100%' }}>
       <PageHeader
+        style={{ position: 'sticky' }}
         title={
           <Link to="/" style={{ color: 'inherit' }}>
             Tic Tac Toe. Decentralized
@@ -85,15 +87,7 @@ export const App: FC = () => {
           </Space>
         }
       />
-      <Layout.Content
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column',
-          textAlign: 'center',
-        }}
-      >
+      <Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexGrow: 1 }}>
         <Switch>
           <Route exact path="/">
             <HomePage />
@@ -107,7 +101,7 @@ export const App: FC = () => {
             <NotFound />
           </Route>
         </Switch>
-      </Layout.Content>
+      </Container>
     </Layout>
   );
 };
