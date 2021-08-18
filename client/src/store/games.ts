@@ -2,36 +2,29 @@ import { arrayify } from '@ethersproject/bytes';
 import { message } from 'antd';
 import { Signer } from 'ethers';
 import { useEffect } from 'react';
-import { TicTacToe } from '../../../typechain';
 import { useSocketOn } from '../hooks/useSocketOn';
 import { formatRPCError } from '../utils';
 import { Move, useGameState } from './gameState';
 import { useSocket } from './socket';
+import { Web3State } from './web3';
 
-export const useGame = (ticTacToe: TicTacToe, gameId: string) => {
+export const useGame = (web3: Web3State, gameId: string) => {
   const gameState = useGameState();
   const { socket } = useSocket();
-  useSocketOn(socket, 'updateGame', async ({ gameId, moves, signature }) => {
-    try {
-      await gameState.validateAndStore(ticTacToe, gameId, { moves, opponentMovesSignature: signature });
-    } catch (e) {
-      message.error(formatRPCError(e));
-      return;
-    }
-  });
-  useSocketOn(socket, 'requestGameState', ({ gameId: gId }) => {
+  useSocketOn(socket, 'gameState.requestGameState', ({ gameId }) => {
     const game = gameState.get(gameId);
-    if (!game || gId !== gameId) {
+    if (!game) {
       return;
     }
-    socket.emit('gameState', game);
+    socket.emit('gameState.gameState', game);
   });
-  useSocketOn(socket, 'gameState', async (payload) => {
+  useSocketOn(socket, 'gameState.gameState', async (payload) => {
     try {
-      await gameState.validateAndStore(ticTacToe, gameId, {
+      await gameState.validateAndStore(web3, gameId, {
         moves: payload.state.moves,
         myMovesSignature: payload.state.opponentMovesSignature,
         opponentMovesSignature: payload.state.myMovesSignature,
+        opponentResultSignature: payload.state.myResultSignature,
       });
       message.info('Synced game state with opponent');
     } catch (e) {
@@ -40,7 +33,7 @@ export const useGame = (ticTacToe: TicTacToe, gameId: string) => {
     }
   });
   useEffect(() => {
-    socket.emit('requestGameState', { gameId });
+    socket.emit('gameState.requestGameState', { gameId });
   }, [socket, gameId]);
 
   const game = gameState.get(gameId);
@@ -52,9 +45,9 @@ export const useGame = (ticTacToe: TicTacToe, gameId: string) => {
     async makeMove(signer: Signer, move: Move) {
       const moves = [...game.state.moves, move];
       try {
-        const myMovesSignature = await signer.signMessage(arrayify(await ticTacToe.encodeMoves(gameId, moves)));
-        await gameState.validateAndStore(ticTacToe, gameId, { moves, myMovesSignature });
-        socket.emit('updateGame', { gameId, moves, signature: myMovesSignature });
+        const myMovesSignature = await signer.signMessage(arrayify(await web3.ticTacToe.encodeMoves(gameId, moves)));
+        const newState = await gameState.validateAndStore(web3, gameId, { moves, myMovesSignature });
+        socket.emit('gameState.gameState', newState);
       } catch (e) {
         message.error(formatRPCError(e));
       }
