@@ -90,7 +90,7 @@ describe('TicTacToe', () => {
     const sig0 = await signGameStart(acc0, acc0.address, acc1.address);
     const sig1 = await signGameStart(acc1, acc0.address, acc1.address);
     const gameId = await lobby.calcGameId(acc0.address);
-    await lobby.startGame(acc0.address, acc1.address, sig0, sig1);
+    await lobby.startGame(gameId, acc0.address, acc1.address, sig0, sig1);
     return gameId;
   }
 
@@ -117,7 +117,7 @@ describe('TicTacToe', () => {
       const sig0 = await signGameStart(player0Account, player0, player1);
       const sig1 = await signGameStart(player1Account, player0, player1);
       const gameId = await lobby.calcGameId(player0);
-      await lobby.startGame(player0, player1, sig0, sig1);
+      await lobby.startGame(gameId, player0, player1, sig0, sig1);
       const game = await lobby.getGame(gameId);
       expect(game.player0).to.eq(player0);
       expect(game.player1).to.eq(player1);
@@ -128,10 +128,10 @@ describe('TicTacToe', () => {
     it('should NOT create a game if signatures are invalid', async () => {
       const sig0 = await signGameStart(player0Account, player0, player1);
       const sig1 = await signGameStart(player1Account, player1, player0);
-      await expect(lobby.startGame(player0, player1, sig0, sig1)).to.be.revertedWith(
+      await expect(lobby.startGame(await lobby.calcGameId(player0), player0, player1, sig0, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player1}")'`,
       );
-      await expect(lobby.startGame(player1, player0, sig0, sig1)).to.be.revertedWith(
+      await expect(lobby.startGame(await lobby.calcGameId(player1), player1, player0, sig0, sig1)).to.be.revertedWith(
         `custom error 'BadSignature("${player1}")'`,
       );
     });
@@ -145,6 +145,14 @@ describe('TicTacToe', () => {
       await startGame(player0Account, player1Account);
       await endGame(gameId);
       await startGame(player0Account, player1Account); // OK
+    });
+
+    it('should NOT allow to create game with the same ID', async () => {
+      const sig0 = await signGameStart(player0Account, player0, player1);
+      const sig1 = await signGameStart(player1Account, player0, player1);
+      const gameId = await lobby.calcGameId(player0);
+      await lobby.startGame(gameId, player0, player1, sig0, sig1);
+      await expect(lobby.startGame(gameId, player0, player1, sig0, sig1)).to.be.revertedWith('bad gameId');
     });
   });
 
@@ -362,7 +370,9 @@ describe('TicTacToe', () => {
 
     it('should NOT end the game if game is already ended', async () => {
       await endGame(gameId);
-      await expect(lobby.endGameWithTimeout(gameId)).to.be.revertedWith('game ended');
+      await expect(
+        lobby.requestGameEndWithTimeout(gameId, [], ...(await signMovesForBoth(gameId, []))),
+      ).to.be.revertedWith('game ended');
     });
 
     describe('#requestGameEndWithTimeout', () => {

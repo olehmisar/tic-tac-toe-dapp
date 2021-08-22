@@ -37,7 +37,13 @@ export class JoinGameRequestNotification extends Notification {
                     const mySignature = await signer.signMessage(
                       arrayify(await ticTacToe.encodeGameStart(payload.gameId, address, payload.joined)),
                     );
-                    const tx = await ticTacToe.startGame(address, payload.joined, mySignature, payload.signature);
+                    const tx = await ticTacToe.startGame(
+                      payload.gameId,
+                      address,
+                      payload.joined,
+                      mySignature,
+                      payload.signature,
+                    );
                     await tx.wait();
                     // TODO: extract logic starting the game into a function/component/module
                     socket.emit('gamePool.gameMatched', { gameId: payload.gameId });
